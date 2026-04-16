@@ -1,0 +1,8 @@
+-- UP
+CREATE TABLE IF NOT EXISTS foo_bar_baz (
+    id UUID NOT NULL PRIMARY KEY
+)
+
+
+-- DOWN
+-- DROP TABLE IF EXISTS foo_bar_baz
