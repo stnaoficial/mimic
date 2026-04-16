@@ -1,0 +1,7 @@
+package app.[domain];
+
+public interface [interface] {
+
+    private final String id;
+
+}
