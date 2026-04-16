@@ -44,7 +44,7 @@ Whitespace is allowed but treated literally:
 
 Basic usage:
 
-```
+```bash
 mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
 ```
 
@@ -76,7 +76,7 @@ mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
 
 If a variable is not provided via CLI, Mimic will prompt:
 
-```
+```bash
 Please enter a value for {{name}}:
 ```
 
@@ -86,7 +86,7 @@ Please enter a value for {{name}}:
 
 Provide variables directly:
 
-```
+```bash
 ./mimic \
   -s ./templates/.mimic \
   -t ./output \
@@ -97,48 +97,68 @@ Provide variables directly:
 
 ---
 
-## Example
+## Java+Mimic Example
 
-### Template Structure
+### Project Architecture
 
-```
-.mimic/
-└── com/java/app/{{domain}}/
-    ├── {{class}}.java.mimic
-    └── {{interface}}.java.mimic
-```
-
-### Template File
-
-```
-package app.{{domain}};
-
-public class {{class}} {
-}
+```bash
+example/java/.mimic/
+└── main
+    └── java
+        └── com
+            └── test
+                └── domain
+                    └── {{domain}}/
+                        ├── {{Domain}}Builder.java.mimic
+                        ├── {{Domain}}Entity.java.mimic
+                        └── {{Domain}}Repository.java.mimic
 ```
 
-### Command
+### Commands
 
-```
-./mimic \
-  -s ./.mimic \
-  -t ./src \
+```bash
+go build -o ./bin/mimic main.go
+
+./bin/mimic \
+  -s ./example/java/.mimic \
+  -t ./example/java \
   -v domain=user \
-  -v class=UserEntity \
-  -v interface=UserModel
+  -v Domain=User
+
+./bin/mimic \
+  -s ./example/java/.mimic \
+  -t ./example/java \
+  -v domain=product \
+  -v Domain=Product
+
+./bin/mimic \
+  -s ./example/java/.mimic \
+  -t ./example/java \
+  -v domain=cart \
+  -v Domain=Cart
 ```
 
 ### Output
 
-```
-src/com/java/app/user/UserEntity.java
-```
-
-```
-package app.user;
-
-public class UserEntity {
-}
+```bash
+example/java/
+└── main
+    └── java
+        └── com
+            └── test
+                └── domain
+                    ├── cart
+                    │   ├── CartBuilder.java
+                    │   ├── CartEntity.java
+                    │   └── CartRepository.java
+                    ├── product
+                    │   ├── ProductBuilder.java
+                    │   ├── ProductEntity.java
+                    │   └── ProductRepository.java
+                    └── user
+                        ├── UserBuilder.java
+                        ├── UserEntity.java
+                        └── UserRepository.java
 ```
 
 ---
