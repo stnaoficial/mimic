@@ -1,7 +1,0 @@
-package com.test.domain.{{domain}};
-
-public interface {{Domain}}Repository {
-
-    private void save({{Domain}}Entity entity);
-
-}

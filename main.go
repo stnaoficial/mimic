@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"mimic/cli"
-	"mimic/utils"
+	"mimic/util"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -50,7 +50,7 @@ func NewMimic() *Mimic {
 	flag.StringVar(&target, "t", ".", TargetFlagUsage)
 	flag.StringVar(&target, "target", ".", TargetFlagUsage)
 
-	vars := make(utils.FlagMap)
+	vars := make(util.FlagMap)
 
 	flag.Var(&vars, "v", VarFlagUsage)
 	flag.Var(&vars, "var", VarFlagUsage)

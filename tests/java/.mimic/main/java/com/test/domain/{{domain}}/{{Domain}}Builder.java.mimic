@@ -1,7 +1,0 @@
-package com.test.domain.{{domain}};
-
-public class {{Domain}}Builder {
-
-    protected final String id;
-
-}
