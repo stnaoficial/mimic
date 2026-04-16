@@ -45,7 +45,7 @@ Whitespace is allowed but treated literally:
 Basic usage:
 
 ```
-./mimic -s="./.mimic" -t="./output"
+./mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
 ```
 
 ---
@@ -88,11 +88,11 @@ Provide variables directly:
 
 ```
 ./mimic \
-  -s="./templates/.mimic" \
-  -t="./output" \
-  --var domain=user \
-  --var class=UserEntity \
-  --var interface=UserModel
+  -s ./templates/.mimic \
+  -t ./output \
+  -v domain=user \
+  -v class=UserEntity \
+  -v interface=UserModel
 ```
 
 ---
@@ -121,11 +121,11 @@ public class {{class}} {
 
 ```
 ./mimic \
-  -s="./.mimic" \
-  -t="./src" \
-  --var domain=user \
-  --var class=UserEntity \
-  --var interface=UserModel
+  -s ./.mimic \
+  -t ./src \
+  -v domain=user \
+  -v class=UserEntity \
+  -v interface=UserModel
 ```
 
 ### Output
