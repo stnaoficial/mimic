@@ -1,0 +1,19 @@
+package com.test.domain.{{lower Domain}};
+
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@Path("/api/v1/{{kebab Domain}}")
+public interface {{Domain}}Controller {
+
+    @PostMapping()
+    public String create(@RequestBody {{Domain}}Request {{camel Domain}}Request) {
+        return "{{Domain}} created"
+    }
+
+    @GetMapping("/{id}")
+    public String read(@PathVariable String {{camel Domain}}Id) {
+        return "{{Domain}} found"
+    }
+
+}

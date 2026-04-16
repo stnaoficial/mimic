@@ -10,8 +10,19 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 )
+
+var modifiers = []string{
+	"camel",
+	"pascal",
+	"snake",
+	"kebab",
+	"lower",
+	"upper",
+	"dot",
+}
 
 const VariablePrefix = "{{"
 const VariableSufix = "}}"
@@ -79,7 +90,7 @@ func NewMimic() *Mimic {
 	varMap := make(map[string]string)
 
 	for key, value := range vars {
-		varMap[fmt.Sprintf("%s%s%s", VariablePrefix, key, VariableSufix)] = value
+		varMap[key] = value
 	}
 
 	return &Mimic{
@@ -143,15 +154,66 @@ func (m *Mimic) collect(name string) {
 		cli.LogAndExit(fmt.Sprintf("Unable to read %s", name), cli.LogSeverityError)
 	}
 
-	matches := variableRegex.FindAllStringSubmatch(name+string(data), -1)
+	submatches := variableRegex.FindAllStringSubmatch(name+string(data), -1)
 
-	for _, match := range matches {
-		if _, exists := m.varMap[match[0]]; !exists {
-			m.varMap[match[0]] = cli.MustAsk(fmt.Sprintf("Please enter a value for %s: ", match[0]))
+	for _, submatch := range submatches {
+		_, name := m.parse(submatch[1])
+
+		if _, exists := m.varMap[name]; !exists {
+			m.varMap[name] = cli.MustAsk(fmt.Sprintf("Please enter a value for %s: ", name))
 		}
 	}
 
 	m.fileMap[name] = string(data)
+}
+
+func (m *Mimic) parse(value string) (string, string) {
+	parts := strings.Fields(value)
+
+	if len(parts) == 0 || len(parts) > 2 {
+		cli.LogAndExit("Invalid variable definition", cli.LogSeverityError)
+	}
+
+	var modifier string
+	var name string
+
+	if len(parts) == 1 {
+		name = parts[0]
+	} else {
+		modifier = parts[0]
+		name = parts[1]
+	}
+
+	if modifier != "" && !slices.Contains(modifiers, modifier) {
+		cli.LogAndExit(fmt.Sprintf("Invalid variable modifier (modifiers: %s)", strings.Join(modifiers, ", ")), cli.LogSeverityError)
+	}
+
+	if !util.IsPascal(name) {
+		cli.LogAndExit(fmt.Sprintf("Variable names must be written in PascalCase. Found \"%s\"", name), cli.LogSeverityError)
+	}
+
+	return modifier, name
+}
+
+func (m *Mimic) modify(modifier string, value string) string {
+	switch modifier {
+	case "camel":
+		return util.ToCamel(value)
+	case "pascal":
+		return util.ToPascal(value)
+	case "snake":
+		return util.ToSnake(value)
+	case "kebab":
+		return util.ToKebab(value)
+	case "lower":
+		return util.ToLower(value)
+	case "upper":
+		return util.ToUpper(value)
+	case "dot":
+		return util.ToDot(value)
+	default:
+		return value
+	}
 }
 
 func (m *Mimic) Copy() {
@@ -178,8 +240,12 @@ func (m *Mimic) Copy() {
 
 func (m *Mimic) fill(text string) string {
 	return variableRegex.ReplaceAllStringFunc(text, func(match string) string {
-		if value, exists := m.varMap[match]; exists {
-			return value
+		submatch := variableRegex.FindStringSubmatch(match)
+
+		modifier, name := m.parse(submatch[1])
+
+		if value, exists := m.varMap[name]; exists {
+			return m.modify(modifier, value)
 		}
 
 		return match
@@ -205,7 +271,7 @@ func main() {
 
 	mimic.Scan()
 
-	if !cli.ConfirmToContinue() {
+	if !cli.MustConfirmToContinue() {
 		os.Exit(0)
 	}
 

@@ -1,0 +1,7 @@
+package com.test.domain.{{lower Domain}};
+
+public interface {{Domain}}Repository {
+
+    private void save({{Domain}}Entity {{camel Domain}}Entity);
+
+}

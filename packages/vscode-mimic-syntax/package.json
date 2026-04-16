@@ -1,0 +1,25 @@
+{
+  "name": "mimic",
+  "displayName": "Mimic",
+  "description": "Mimic Templating Language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.116.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "mimic",
+      "aliases": ["Mimic Templating Language", "mimic"],
+      "extensions": [".mimic"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "mimic",
+      "scopeName": "source.mimic",
+      "path": "./syntaxes/mimic.tmLanguage.json"
+    }]
+  }
+}

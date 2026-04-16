@@ -1,0 +1,48 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Mimic Templating Language",
+  "patterns": [
+    {
+      "include": "#template"
+    },
+    {
+      "include": "#comment"
+    }
+  ],
+  "repository": {
+    "template": {
+      "begin": "\\{\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.template.begin.mimic"
+        }
+      },
+      "end": "\\}\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.template.end.mimic"
+        }
+      },
+      "name": "meta.template.expression.mimic",
+      "patterns": [
+        {
+          "match": "\\s+",
+          "name": "meta.whitespace.mimic"
+        },
+        {
+          "name": "support.function.mimic",
+          "match": "\\b[a-z][a-zA-Z0-9_]*\\b"
+        },
+        {
+          "name": "variable.other.mimic",
+          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    },
+    "comment": {
+      "name": "comment.block.mimic",
+      "match": "[^{}]+|\\{|\\}"
+    }
+  },
+  "scopeName": "source.mimic"
+}

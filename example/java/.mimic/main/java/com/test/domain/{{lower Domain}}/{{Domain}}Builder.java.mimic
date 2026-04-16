@@ -1,4 +1,4 @@
-package com.test.domain.{{domain}};
+package com.test.domain.{{lower Domain}};
 
 public class {{Domain}}Builder {
 

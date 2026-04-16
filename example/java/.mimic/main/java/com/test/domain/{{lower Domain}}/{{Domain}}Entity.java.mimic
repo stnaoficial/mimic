@@ -1,4 +1,4 @@
-package com.test.domain.{{domain}};
+package com.test.domain.{{lower Domain}};
 
 import com.test.domain.{{Domain}}Builder;
 
@@ -6,7 +6,7 @@ public class {{Domain}}Entity {
 
     private final String id;
 
-    public {{Domain}}Entity({{Domain}}Builder builder) {
+    public {{Domain}}Entity({{Domain}}Builder {{camel Domain}}Builder) {
         this.id = builder.id;
     }
 
