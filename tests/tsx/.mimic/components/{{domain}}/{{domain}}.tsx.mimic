@@ -1,10 +1,10 @@
 import React from "react";
 
-export interface {{interface}} {
+export interface {{Domain}}Interface {
     // TODO
 }
 
-export default function {{component}}({ children }: React.PropsWithChildren<{{interface}}>) {
+export default function {{Domain}}Component({ children }: React.PropsWithChildren<{{Domain}}Interface>) {
     return (
         <Fragment>
             { children }

@@ -4,8 +4,17 @@ test.java: main.go
 		-s ./tests/java/.mimic \
 		-t ./tests/java \
 		-v domain=user \
-		-v class=UserEntity \
-		-v interface=UserRepository
+		-v Domain=User
+	./bin/mimic \
+		-s ./tests/java/.mimic \
+		-t ./tests/java \
+		-v domain=product \
+		-v Domain=Product
+	./bin/mimic \
+		-s ./tests/java/.mimic \
+		-t ./tests/java \
+		-v domain=cart \
+		-v Domain=Cart
 
 test.tsx: main.go
 	go build -o ./bin/mimic main.go
@@ -13,5 +22,4 @@ test.tsx: main.go
 		-s ./tests/tsx/.mimic \
 		-t ./tests/tsx \
 		-v domain=cart \
-		-v component=CartComponent \
-		-v interface=CartInterface
+		-v Domain=Cart
