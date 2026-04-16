@@ -45,7 +45,7 @@ Whitespace is allowed but treated literally:
 Basic usage:
 
 ```
-./mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
+mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
 ```
 
 ---
