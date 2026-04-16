@@ -1,25 +1,25 @@
 test.java: main.go
 	go build -o ./bin/mimic main.go
 	./bin/mimic \
-		-s ./tests/java/.mimic \
-		-t ./tests/java \
+		-s ./.test/java/.mimic \
+		-t ./.test/java \
 		-v domain=user \
 		-v Domain=User
 	./bin/mimic \
-		-s ./tests/java/.mimic \
-		-t ./tests/java \
+		-s ./.test/java/.mimic \
+		-t ./.test/java \
 		-v domain=product \
 		-v Domain=Product
 	./bin/mimic \
-		-s ./tests/java/.mimic \
-		-t ./tests/java \
+		-s ./.test/java/.mimic \
+		-t ./.test/java \
 		-v domain=cart \
 		-v Domain=Cart
 
 test.tsx: main.go
 	go build -o ./bin/mimic main.go
 	./bin/mimic \
-		-s ./tests/tsx/.mimic \
-		-t ./tests/tsx \
+		-s ./.test/tsx/.mimic \
+		-t ./.test/tsx \
 		-v domain=cart \
 		-v Domain=Cart
