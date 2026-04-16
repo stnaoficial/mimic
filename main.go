@@ -37,7 +37,7 @@ func NewMimic() *Mimic {
 		fmt.Fprintf(os.Stderr, "Mimic interpret .mimic files in the source path (./.mimic directory by default) and create copies of them in the target path (the current directory by default).\n\n")
 		fmt.Fprintf(os.Stderr, "Configure how to start mimicking files across your entire filesystem\n")
 		fmt.Fprintf(os.Stderr, "  -s, --source    %s\n", SourceFlagUsage)
-		fmt.Fprintf(os.Stderr, "  -t, --target    %s\n\n", TargetFlagUsage)
+		fmt.Fprintf(os.Stderr, "  -t, --target    %s\n", TargetFlagUsage)
 		fmt.Fprintf(os.Stderr, "  -v, --var       %s\n\n", VarFlagUsage)
 	}
 
