@@ -6,33 +6,17 @@ import (
 	"io"
 	"io/fs"
 	"mimic/cli"
+	"mimic/utils"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-type mapFlag map[string]string
+const VariablePrefix = "{{"
+const VariableSufix = "}}"
 
-func (m *mapFlag) String() string {
-	return fmt.Sprint(*m)
-}
-
-func (m *mapFlag) Set(value string) error {
-	parts := strings.SplitN(value, "=", 2)
-
-	if len(parts) != 2 {
-		return fmt.Errorf("Invalid format, expected [--v key=value | --var key=value]\n")
-	}
-
-	key := strings.TrimSpace(parts[0])
-	val := strings.TrimSpace(parts[1])
-
-	(*m)[key] = val
-	return nil
-}
-
-const VariableMatchRegularExpression = `\[\s*(.*?)\s*\]`
+var variableRegex = regexp.MustCompile(regexp.QuoteMeta(VariablePrefix) + `\s*(.*?)\s*` + regexp.QuoteMeta(VariableSufix))
 
 const SourceFlagUsage = "Set the source directory path of .mimic files"
 const TargetFlagUsage = "Set the target path where all files will be copied"
@@ -66,7 +50,7 @@ func NewMimic() *Mimic {
 	flag.StringVar(&target, "t", ".", TargetFlagUsage)
 	flag.StringVar(&target, "target", ".", TargetFlagUsage)
 
-	vars := make(mapFlag)
+	vars := make(utils.FlagMap)
 
 	flag.Var(&vars, "v", VarFlagUsage)
 	flag.Var(&vars, "var", VarFlagUsage)
@@ -95,7 +79,7 @@ func NewMimic() *Mimic {
 	varMap := make(map[string]string)
 
 	for key, value := range vars {
-		varMap[fmt.Sprintf("[%s]", key)] = value
+		varMap[fmt.Sprintf("%s%s%s", VariablePrefix, key, VariableSufix)] = value
 	}
 
 	return &Mimic{
@@ -109,7 +93,7 @@ func NewMimic() *Mimic {
 }
 
 func (m *Mimic) Scan() {
-	cli.Log(fmt.Sprintf("Scanning files from the source directory %s...", m.source), cli.LogSeverityWarn)
+	cli.Log(fmt.Sprintf("Scanning files from the source directory %s...", m.source), cli.LogSeverityInfo)
 
 	names, err := m.walk(m.source)
 
@@ -159,9 +143,7 @@ func (m *Mimic) collect(name string) {
 		cli.LogAndExit(fmt.Sprintf("Unable to read %s", name), cli.LogSeverityError)
 	}
 
-	re := regexp.MustCompile(VariableMatchRegularExpression)
-
-	matches := re.FindAllStringSubmatch(name+string(data), -1)
+	matches := variableRegex.FindAllStringSubmatch(name+string(data), -1)
 
 	for _, match := range matches {
 		if _, exists := m.varMap[match[0]]; !exists {
@@ -173,12 +155,16 @@ func (m *Mimic) collect(name string) {
 }
 
 func (m *Mimic) Copy() {
-	cli.Log(fmt.Sprintf("Copying files to the target directory %s...", m.target), cli.LogSeverityWarn)
+	cli.Log(fmt.Sprintf("Copying files to the target directory %s...", m.target), cli.LogSeverityInfo)
 
 	for name, data := range m.fileMap {
-		name = name[:len(name)-len(".mimic")]
-		name = name[len(m.source)-1:]
-		name = m.target + "/" + name
+		rel, err := filepath.Rel(m.source, name)
+
+		if err != nil {
+			cli.LogAndExit("Unable to resolve relative path", cli.LogSeverityError)
+		}
+
+		name = filepath.Join(m.target, rel[:len(rel)-len(".mimic")])
 
 		name = m.fill(name)
 		data = m.fill(data)
@@ -191,24 +177,24 @@ func (m *Mimic) Copy() {
 }
 
 func (m *Mimic) fill(text string) string {
-	result := text
+	return variableRegex.ReplaceAllStringFunc(text, func(match string) string {
+		if value, exists := m.varMap[match]; exists {
+			return value
+		}
 
-	for name, value := range m.varMap {
-		result = strings.ReplaceAll(result, name, value)
-	}
-
-	return result
+		return match
+	})
 }
 
 func (m *Mimic) write(name string, data string) {
 	dirname := filepath.Dir(name)
 
 	if err := os.MkdirAll(dirname, 0755); err != nil {
-		cli.Log("Could not create %s", cli.LogSeverityWarn)
+		cli.LogAndExit(fmt.Sprintf("Could not create %s", name), cli.LogSeverityError)
 	}
 
-	if err := os.WriteFile(name, []byte(data), 0755); err != nil {
-		cli.Log("Could not create %s", cli.LogSeverityWarn)
+	if err := os.WriteFile(name, []byte(data), 0644); err != nil {
+		cli.LogAndExit(fmt.Sprintf("Could not create %s", name), cli.LogSeverityError)
 	}
 
 	cli.LogFileNameAdded(name)

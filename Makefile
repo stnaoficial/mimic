@@ -1,6 +1,6 @@
 test.java: main.go
-	go build .
-	./mimic \
+	go build -o ./bin/mimic main.go
+	./bin/mimic \
 		-s ./tests/java/.mimic \
 		-t ./tests/java \
 		-v domain=user \
@@ -8,8 +8,8 @@ test.java: main.go
 		-v interface=UserRepository
 
 test.tsx: main.go
-	go build .
-	./mimic \
+	go build -o ./bin/mimic main.go
+	./bin/mimic \
 		-s ./tests/tsx/.mimic \
 		-t ./tests/tsx \
 		-v domain=cart \
