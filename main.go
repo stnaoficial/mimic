@@ -12,21 +12,51 @@ import (
 	"strings"
 )
 
+type mapFlag map[string]string
+
+func (m *mapFlag) String() string {
+	return fmt.Sprint(*m)
+}
+
+func (m *mapFlag) Set(value string) error {
+	parts := strings.SplitN(value, "=", 2)
+
+	if len(parts) != 2 {
+		return fmt.Errorf("Invalid format, expected [--v key=value | --var key=value]\n")
+	}
+
+	key := strings.TrimSpace(parts[0])
+	val := strings.TrimSpace(parts[1])
+
+	(*m)[key] = val
+	return nil
+}
+
 const VariableMatchRegularExpression = `\[\s*(.*?)\s*\]`
 
 const SourceFlagUsage = "Set the source directory path of .mimic files"
 const TargetFlagUsage = "Set the target path where all files will be copied"
+const VarFlagUsage = "Set a var directly by passing as a key=value pair"
 
 type Mimic struct {
 	source     string
 	sourceFile os.FileInfo
 	target     string
 	targetFile os.FileInfo
-	files      map[string]string
-	vars       map[string]string
+	fileMap    map[string]string
+	varMap     map[string]string
 }
 
 func NewMimic() *Mimic {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: mimic [-s | --source] [-t | --target] [-v | --var]\n")
+		fmt.Fprintf(os.Stderr, "Mimic interpret .mimic files in the source path (./.mimic directory by default) and create copies of them in the target path (the current directory by default).\n\n")
+		fmt.Fprintf(os.Stderr, "Configure how to start mimicking files across your entire filesystem\n")
+		fmt.Fprintf(os.Stderr, "  -s, --source    %s\n", SourceFlagUsage)
+		fmt.Fprintf(os.Stderr, "  -t, --target    %s\n\n", TargetFlagUsage)
+		fmt.Fprintf(os.Stderr, "  -v, --var       %s\n\n", VarFlagUsage)
+	}
+
 	var source string
 	var target string
 
@@ -36,13 +66,10 @@ func NewMimic() *Mimic {
 	flag.StringVar(&target, "t", ".", TargetFlagUsage)
 	flag.StringVar(&target, "target", ".", TargetFlagUsage)
 
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: mimic [-s | --source] [-t | --target]\n")
-		fmt.Fprintf(os.Stderr, "Mimic interpret .mimic files in the source path (./.mimic directory by default) and create copies of them in the target path (the current directory by default).\n\n")
-		fmt.Fprintf(os.Stderr, "Configure how to start mimicking files across your entire filesystem\n")
-		fmt.Fprintf(os.Stderr, "  -s, --source    %s\n", SourceFlagUsage)
-		fmt.Fprintf(os.Stderr, "  -t, --target    %s\n\n", TargetFlagUsage)
-	}
+	vars := make(mapFlag)
+
+	flag.Var(&vars, "v", VarFlagUsage)
+	flag.Var(&vars, "var", VarFlagUsage)
 
 	flag.CommandLine.SetOutput(io.Discard)
 
@@ -65,13 +92,19 @@ func NewMimic() *Mimic {
 		cli.LogAndExit(fmt.Sprintf("Unable to get information about %s", target), cli.LogSeverityError)
 	}
 
+	varMap := make(map[string]string)
+
+	for key, value := range vars {
+		varMap[fmt.Sprintf("[%s]", key)] = value
+	}
+
 	return &Mimic{
 		source:     source,
 		sourceFile: sourceFile,
 		target:     target,
 		targetFile: targetFile,
-		files:      make(map[string]string),
-		vars:       make(map[string]string),
+		fileMap:    make(map[string]string),
+		varMap:     varMap,
 	}
 }
 
@@ -131,18 +164,18 @@ func (m *Mimic) collect(name string) {
 	matches := re.FindAllStringSubmatch(name+string(data), -1)
 
 	for _, match := range matches {
-		if _, exists := m.vars[match[0]]; !exists {
-			m.vars[match[0]] = cli.MustAsk(fmt.Sprintf("Please enter a value for %s: ", match[0]))
+		if _, exists := m.varMap[match[0]]; !exists {
+			m.varMap[match[0]] = cli.MustAsk(fmt.Sprintf("Please enter a value for %s: ", match[0]))
 		}
 	}
 
-	m.files[name] = string(data)
+	m.fileMap[name] = string(data)
 }
 
 func (m *Mimic) Copy() {
 	cli.Log(fmt.Sprintf("Copying files to the target directory %s...", m.target), cli.LogSeverityWarn)
 
-	for name, data := range m.files {
+	for name, data := range m.fileMap {
 		name = name[:len(name)-len(".mimic")]
 		name = name[len(m.source)-1:]
 		name = m.target + "/" + name
@@ -160,7 +193,7 @@ func (m *Mimic) Copy() {
 func (m *Mimic) fill(text string) string {
 	result := text
 
-	for name, value := range m.vars {
+	for name, value := range m.varMap {
 		result = strings.ReplaceAll(result, name, value)
 	}
 

@@ -1,0 +1,13 @@
+import React from "react";
+
+export interface [interface] {
+    // TODO
+}
+
+export default function [component]({ children }: React.PropsWithChildren<[interface]>) {
+    return (
+        <Fragment>
+            { children }
+        </Fragment>
+    )
+}

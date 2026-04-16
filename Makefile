@@ -1,3 +1,17 @@
-test: main.go
+test.java: main.go
 	go build .
-	./mimic -s="./tests/.mimic" -t="./tests"
+	./mimic \
+		-s ./tests/java/.mimic \
+		-t ./tests/java \
+		-v domain=user \
+		-v class=UserEntity \
+		-v interface=UserRepository
+
+test.tsx: main.go
+	go build .
+	./mimic \
+		-s ./tests/tsx/.mimic \
+		-t ./tests/tsx \
+		-v domain=cart \
+		-v component=CartComponent \
+		-v interface=CartInterface
