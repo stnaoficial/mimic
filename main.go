@@ -141,7 +141,6 @@ func (m *Mimic) parse(value string) ([]string, string) {
 		// e.g. "modifier(name)" -> extracts "modifier"
 		modifier := strings.TrimSpace(current[:beginParen])
 
-		// Check against your global list
 		if slices.Contains(VariableModifiers, modifier) {
 			modifiers = append(modifiers, modifier)
 
@@ -150,7 +149,7 @@ func (m *Mimic) parse(value string) ([]string, string) {
 			current = strings.TrimSpace(current[beginParen+1 : endParen])
 		} else {
 			// If it has parens but the prefix isn't a modifier,
-			// stop and treat the remaining string as the key.
+			// stop and treat the remaining string as the key
 			break
 		}
 	}
