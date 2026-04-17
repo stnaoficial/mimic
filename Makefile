@@ -5,4 +5,4 @@ example.java: ./bin/mimic
 	./bin/mimic \
 		-s ./example/java/.mimic \
 		-t ./example/java \
-		-v Domain=FooBarBaz
+		-v domain="Foo Bar Baz"

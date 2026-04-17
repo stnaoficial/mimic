@@ -1,7 +1,0 @@
-package com.test.domain.{{lower Domain}};
-
-public class {{pascal Domain}}Builder {
-
-    protected final String id;
-
-}

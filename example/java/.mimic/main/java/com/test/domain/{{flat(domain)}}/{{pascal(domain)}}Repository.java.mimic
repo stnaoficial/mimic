@@ -1,0 +1,7 @@
+package com.test.domain.{{ flat(domain) }};
+
+public interface {{ pascal(domain) }}Repository {
+
+    private void save({{ pascal(domain) }}Entity {{ camel(domain) }}Entity);
+
+}

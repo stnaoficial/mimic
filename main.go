@@ -14,24 +14,16 @@ import (
 	"strings"
 )
 
-var modifiers = []string{
+var VariableModifiers = []string{
 	"camel",
 	"pascal",
 	"snake",
 	"kebab",
+	"dot",
+	"flat",
 	"lower",
 	"upper",
-	"dot",
 }
-
-const VariablePrefix = "{{"
-const VariableSufix = "}}"
-
-var variableRegex = regexp.MustCompile(regexp.QuoteMeta(VariablePrefix) + `\s*(.*?)\s*` + regexp.QuoteMeta(VariableSufix))
-
-const SourceFlagUsage = "Set the source directory path of .mimic files"
-const TargetFlagUsage = "Set the target path where all files will be copied"
-const VarFlagUsage = "Set a var directly by passing as a key=value pair"
 
 type Mimic struct {
 	source     string
@@ -40,41 +32,10 @@ type Mimic struct {
 	targetFile os.FileInfo
 	fileMap    map[string]string
 	varMap     map[string]string
+	varRegex   *regexp.Regexp
 }
 
-func NewMimic() *Mimic {
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: mimic [-s | --source] [-t | --target] [-v | --var]\n")
-		fmt.Fprintf(os.Stderr, "Mimic interpret .mimic files in the source path (./.mimic directory by default) and create copies of them in the target path (the current directory by default).\n\n")
-		fmt.Fprintf(os.Stderr, "Configure how to start mimicking files across your entire filesystem\n")
-		fmt.Fprintf(os.Stderr, "  -s, --source    %s\n", SourceFlagUsage)
-		fmt.Fprintf(os.Stderr, "  -t, --target    %s\n", TargetFlagUsage)
-		fmt.Fprintf(os.Stderr, "  -v, --var       %s\n\n", VarFlagUsage)
-	}
-
-	var source string
-	var target string
-
-	flag.StringVar(&source, "s", "./.mimic", SourceFlagUsage)
-	flag.StringVar(&source, "source", "./.mimic", SourceFlagUsage)
-
-	flag.StringVar(&target, "t", ".", TargetFlagUsage)
-	flag.StringVar(&target, "target", ".", TargetFlagUsage)
-
-	vars := make(util.FlagMap)
-
-	flag.Var(&vars, "v", VarFlagUsage)
-	flag.Var(&vars, "var", VarFlagUsage)
-
-	flag.CommandLine.SetOutput(io.Discard)
-
-	flag.Parse()
-
-	if flag.NArg() > 0 {
-		flag.Usage()
-		os.Exit(1)
-	}
-
+func NewMimic(source string, target string, varMap map[string]string, varRegex *regexp.Regexp) *Mimic {
 	sourceFile, err := os.Stat(source)
 
 	if err != nil {
@@ -87,12 +48,6 @@ func NewMimic() *Mimic {
 		cli.LogAndExit(fmt.Sprintf("Unable to get information about %s", target), cli.LogSeverityError)
 	}
 
-	varMap := make(map[string]string)
-
-	for key, value := range vars {
-		varMap[key] = value
-	}
-
 	return &Mimic{
 		source:     source,
 		sourceFile: sourceFile,
@@ -100,6 +55,7 @@ func NewMimic() *Mimic {
 		targetFile: targetFile,
 		fileMap:    make(map[string]string),
 		varMap:     varMap,
+		varRegex:   varRegex,
 	}
 }
 
@@ -154,7 +110,7 @@ func (m *Mimic) collect(name string) {
 		cli.LogAndExit(fmt.Sprintf("Unable to read %s", name), cli.LogSeverityError)
 	}
 
-	submatches := variableRegex.FindAllStringSubmatch(name+string(data), -1)
+	submatches := m.varRegex.FindAllStringSubmatch(name+string(data), -1)
 
 	for _, submatch := range submatches {
 		_, name := m.parse(submatch[1])
@@ -167,53 +123,78 @@ func (m *Mimic) collect(name string) {
 	m.fileMap[name] = string(data)
 }
 
-func (m *Mimic) parse(value string) (string, string) {
-	parts := strings.Fields(value)
+func (m *Mimic) parse(value string) ([]string, string) {
+	current := strings.TrimSpace(value)
 
-	if len(parts) == 0 || len(parts) > 2 {
-		cli.LogAndExit("Invalid variable definition", cli.LogSeverityError)
+	var modifiers []string
+
+	for {
+		beginParen := strings.Index(current, "(")
+		endParen := strings.LastIndex(current, ")")
+
+		// If no more balanced parentheses are found, we are at the core key
+		if beginParen == -1 || endParen == -1 || endParen < beginParen {
+			break
+		}
+
+		// Extracts the modifier name
+		// e.g. "modifier(name)" -> extracts "modifier"
+		modifier := strings.TrimSpace(current[:beginParen])
+
+		// Check against your global list
+		if slices.Contains(VariableModifiers, modifier) {
+			modifiers = append(modifiers, modifier)
+
+			// Updates 'current' to be the content INSIDE the parentheses
+			// current becomes "name"
+			current = strings.TrimSpace(current[beginParen+1 : endParen])
+		} else {
+			// If it has parens but the prefix isn't a modifier,
+			// stop and treat the remaining string as the key.
+			break
+		}
 	}
 
-	var modifier string
-	var name string
+	name := current
 
-	if len(parts) == 1 {
-		name = parts[0]
-	} else {
-		modifier = parts[0]
-		name = parts[1]
+	if name == "" {
+		cli.LogAndExit("Variable name cannot be empty", cli.LogSeverityError)
 	}
 
-	if modifier != "" && !slices.Contains(modifiers, modifier) {
-		cli.LogAndExit(fmt.Sprintf("Invalid variable modifier\"%s\" (modifiers: %s)", modifier, strings.Join(modifiers, ", ")), cli.LogSeverityError)
-	}
+	// Reverse so innermost is first
+	// e.g. {{ modifier1(modifier0(name)) }} -> [modifier0, modifier1]
+	slices.Reverse(modifiers)
 
-	if !util.IsPascal(name) {
-		cli.LogAndExit(fmt.Sprintf("Variable names must be written in PascalCase. Found \"%s\"", name), cli.LogSeverityError)
-	}
-
-	return modifier, name
+	return modifiers, name
 }
 
-func (m *Mimic) modify(modifier string, value string) string {
-	switch modifier {
-	case "camel":
-		return util.ToCamel(value)
-	case "pascal":
-		return util.ToPascal(value)
-	case "snake":
-		return util.ToSnake(value)
-	case "kebab":
-		return util.ToKebab(value)
-	case "lower":
-		return util.ToLower(value)
-	case "upper":
-		return util.ToUpper(value)
-	case "dot":
-		return util.ToDot(value)
-	default:
-		return value
+func (m *Mimic) modify(modifiers []string, value string) string {
+	result := value
+
+	for _, mod := range modifiers {
+		switch mod {
+		case "camel":
+			result = util.ToCamel(result)
+		case "pascal":
+			result = util.ToPascal(result)
+		case "snake":
+			result = util.ToSnake(result)
+		case "kebab":
+			result = util.ToKebab(result)
+		case "dot":
+			result = util.ToDot(result)
+		case "flat":
+			result = util.ToFlat(result)
+		case "lower":
+			result = util.ToLower(result)
+		case "upper":
+			result = util.ToUpper(result)
+		default:
+			continue
+		}
 	}
+
+	return result
 }
 
 func (m *Mimic) Copy() {
@@ -239,13 +220,13 @@ func (m *Mimic) Copy() {
 }
 
 func (m *Mimic) fill(text string) string {
-	return variableRegex.ReplaceAllStringFunc(text, func(match string) string {
-		submatch := variableRegex.FindStringSubmatch(match)
+	return m.varRegex.ReplaceAllStringFunc(text, func(match string) string {
+		submatch := m.varRegex.FindStringSubmatch(match)
 
-		modifier, name := m.parse(submatch[1])
+		modifiers, name := m.parse(submatch[1])
 
 		if value, exists := m.varMap[name]; exists {
-			return m.modify(modifier, value)
+			return m.modify(modifiers, value)
 		}
 
 		return match
@@ -264,8 +245,52 @@ func (m *Mimic) write(name string, data string) {
 	}
 }
 
+const SourceFlagUsage = "Set the source directory path of .mimic files"
+const TargetFlagUsage = "Set the target path where all files will be copied"
+const VarFlagUsage = "Set a var directly by passing as a key=value pair"
+const VarPrefixFlagUsage = "Set the var pattern prefix (default \\{\\{)"
+const VarSufixFlagUsage = "Set the var pattern sufix (default \\}\\})"
+
 func main() {
-	mimic := NewMimic()
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: mimic [-s | --source] [-t | --target] [-v | --var]\n")
+		fmt.Fprintf(os.Stderr, "Mimic interpret .mimic files in the source path (./.mimic directory by default) and create copies of them in the target path (the current directory by default).\n\n")
+		fmt.Fprintf(os.Stderr, "Configure how to start mimicking files across your entire filesystem\n")
+		fmt.Fprintf(os.Stderr, "  -s, --source    %s\n", SourceFlagUsage)
+		fmt.Fprintf(os.Stderr, "  -t, --target    %s\n", TargetFlagUsage)
+		fmt.Fprintf(os.Stderr, "  -v, --var       %s\n", VarFlagUsage)
+		fmt.Fprintf(os.Stderr, "  --var-prefix    %s\n", VarPrefixFlagUsage)
+		fmt.Fprintf(os.Stderr, "  --var-sufix     %s\n\n", VarSufixFlagUsage)
+	}
+
+	var sourceFlag string
+	var targetFlag string
+
+	flag.StringVar(&sourceFlag, "s", "./.mimic", SourceFlagUsage)
+	flag.StringVar(&sourceFlag, "source", "./.mimic", SourceFlagUsage)
+
+	flag.StringVar(&targetFlag, "t", ".", TargetFlagUsage)
+	flag.StringVar(&targetFlag, "target", ".", TargetFlagUsage)
+
+	varFlags := make(util.FlagMap)
+
+	flag.Var(&varFlags, "v", VarFlagUsage)
+	flag.Var(&varFlags, "var", VarFlagUsage)
+
+	varPrefix := *flag.String("var-prefix", "{{", VarPrefixFlagUsage)
+	varSufix := *flag.String("var-sufix", "}}", VarSufixFlagUsage)
+	varRegex := regexp.MustCompile(regexp.QuoteMeta(varPrefix) + `\s*(.*?)\s*` + regexp.QuoteMeta(varSufix))
+
+	flag.CommandLine.SetOutput(io.Discard)
+
+	flag.Parse()
+
+	if flag.NArg() > 0 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	mimic := NewMimic(sourceFlag, targetFlag, varFlags, varRegex)
 
 	mimic.Scan()
 

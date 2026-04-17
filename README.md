@@ -18,30 +18,31 @@ Variables can be used in:
 
 ## Variable Syntax
 
-Variables use double curly braces and are named in PascalCase format:
+Variables use double curly braces:
 
 ```txt
-{{Variable}}
+{{ name }}
 ```
 
 Examples:
 
 ```txt
-{{Name}}
-{{Domain}}
-{{Class}}
+{{ name }}
+{{ Name }}
+{{ This is a name }}
 ```
 
-Whitespace is allowed for modifiers:
+Modifiers:
 
 ```txt
-{{camel Name}}  // fooBarBaz
-{{pascal Name}} // FooBarBaz
-{{snake Name}}  // foo_bar_baz
-{{kebab Name}}  // foo-bar-baz
-{{lower Name}}  // foobarbaz
-{{upper Name}}  // FOOBARBAZ
-{{dot Name}}    // foo.bar.baz
+{{ camel(some name) }}  // someName
+{{ pascal(some name) }} // SomeName
+{{ snake(some name) }}  // some_name
+{{ kebab(some name) }}  // some-name
+{{ dot(some name) }}    // some.name
+{{ flat(some name) }}   // somename
+{{ lower(some name) }}  // some name
+{{ upper(some name) }}  // SOME NAME
 ```
 
 ---
@@ -69,7 +70,7 @@ mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
 ## How It Works
 
 1. Mimic scans the source directory for `.mimic` files
-2. It detects variables like `{{Package}}`, `{{Class}}`, etc.
+2. It detects variables like `{{ name }}`, `{{ lower(name) }}`, etc.
 3. Values are resolved:
 
    * From `--var` flags if provided
@@ -84,7 +85,8 @@ mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
 If a variable is not provided via CLI, Mimic will prompt:
 
 ```bash
-$ Please enter a value for "Domain":
+$ Please enter a value for "name":
+$ Please enter a value for "This is a name":
 ```
 
 ---
@@ -94,11 +96,7 @@ $ Please enter a value for "Domain":
 Provide variables directly:
 
 ```bash
-./mimic \
-  -s ./templates/.mimic \
-  -t ./output \
-  -v Domain=User \
-  -v Version=1.0.0
+mimic -v name=value -v "This is a name = This is a value"
 ```
 
 ## Behavior Details
@@ -111,6 +109,4 @@ Provide variables directly:
 
 ## Limitations
 
-* Only supports simple `{{Name}}` and `{{modfier Name}}` variable replacement
 * No conditionals or loops
-* No built-in validation for variable values

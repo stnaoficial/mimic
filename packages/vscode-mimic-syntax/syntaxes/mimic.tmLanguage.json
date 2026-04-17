@@ -1,48 +1,30 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Mimic Templating Language",
+  "scopeName": "source.mimic",
   "patterns": [
     {
-      "include": "#template"
+      "include": "#curly-braces-expression"
     },
     {
       "include": "#comment"
     }
   ],
   "repository": {
-    "template": {
+    "curly-braces-expression": {
+      "name": "string.template.mimic",
       "begin": "\\{\\{",
-      "beginCaptures": {
-        "0": {
-          "name": "punctuation.definition.template.begin.mimic"
-        }
-      },
       "end": "\\}\\}",
-      "endCaptures": {
-        "0": {
-          "name": "punctuation.definition.template.end.mimic"
-        }
-      },
-      "name": "meta.template.expression.mimic",
       "patterns": [
         {
-          "match": "\\s+",
-          "name": "meta.whitespace.mimic"
-        },
-        {
-          "name": "support.function.mimic",
-          "match": "\\b[a-z][a-zA-Z0-9_]*\\b"
-        },
-        {
-          "name": "variable.other.mimic",
-          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+          "name": "variable.parameter.mimic",
+          "match": "[^}]+"
         }
       ]
     },
     "comment": {
-      "name": "comment.block.mimic",
-      "match": "[^{}]+|\\{|\\}"
+      "name": "comment.line.mimic",
+      "match": "(?:(?!\\{\\{).)+"
     }
-  },
-  "scopeName": "source.mimic"
+  }
 }

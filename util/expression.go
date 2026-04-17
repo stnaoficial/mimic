@@ -1,15 +1,8 @@
 package util
 
 import (
-	"regexp"
 	"strings"
 	"unicode"
-)
-
-var (
-	lowerRegex  = regexp.MustCompile(`^[^A-Z]*[a-z][^A-Z]*$`)
-	camelRegex  = regexp.MustCompile(`^[a-z]+(?:[A-Z][a-z0-9]*)+$`)
-	pascalRegex = regexp.MustCompile(`^(?:[A-Z][a-z0-9]*)+$`)
 )
 
 func capitalize(w string) string {
@@ -64,38 +57,6 @@ func tokenize(s string) []string {
 	return tokens
 }
 
-func IsLower(s string) bool {
-	return lowerRegex.MatchString(s)
-}
-
-func IsCamel(s string) bool {
-	return camelRegex.MatchString(s)
-}
-
-func IsPascal(s string) bool {
-	return pascalRegex.MatchString(s)
-}
-
-func ToKebab(s string) string {
-	return strings.Join(tokenize(s), "-")
-}
-
-func ToSnake(s string) string {
-	return strings.Join(tokenize(s), "_")
-}
-
-func ToDot(s string) string {
-	return strings.Join(tokenize(s), ".")
-}
-
-func ToLower(s string) string {
-	return strings.Join(tokenize(s), "")
-}
-
-func ToUpper(s string) string {
-	return strings.ToUpper(strings.Join(tokenize(s), ""))
-}
-
 func ToCamel(s string) string {
 	tokens := tokenize(s)
 
@@ -128,4 +89,28 @@ func ToPascal(s string) string {
 	}
 
 	return builder.String()
+}
+
+func ToSnake(s string) string {
+	return strings.Join(tokenize(s), "_")
+}
+
+func ToKebab(s string) string {
+	return strings.Join(tokenize(s), "-")
+}
+
+func ToDot(s string) string {
+	return strings.Join(tokenize(s), ".")
+}
+
+func ToFlat(s string) string {
+	return strings.Join(tokenize(s), "")
+}
+
+func ToLower(s string) string {
+	return strings.ToLower(s)
+}
+
+func ToUpper(s string) string {
+	return strings.ToUpper(s)
 }
