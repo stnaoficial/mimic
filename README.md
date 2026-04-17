@@ -20,13 +20,13 @@ Variables can be used in:
 
 Variables use double curly braces:
 
-```txt
+```plaintext
 {{ name }}
 ```
 
 Examples:
 
-```txt
+```plaintext
 {{ name }}
 {{ Name }}
 {{ This is a name }}
@@ -34,7 +34,7 @@ Examples:
 
 Modifiers:
 
-```txt
+```plaintext
 {{ camel(some name) }}  // someName
 {{ pascal(some name) }} // SomeName
 {{ snake(some name) }}  // some_name
@@ -45,6 +45,17 @@ Modifiers:
 {{ upper(some name) }}  // SOME NAME
 ```
 
+Modifiers can be nested in different combinations:
+
+```plaintext
+{{ upper(snake(some name)) }} // SOME_NAME
+{{ upper(kebab(some name)) }} // SOME-NAME
+{{ upper(dot(some name)) }} // SOME.NAME
+{{ lower(snake(some name)) }} // some_name
+{{ lower(kebab(some name)) }} // some-name
+{{ lower(dot(some name)) }} // some.name
+```
+
 ---
 
 ## Usage
@@ -52,18 +63,20 @@ Modifiers:
 Basic usage:
 
 ```bash
-mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
+$ mimic -s ./.mimic -t ./output -v key0=value0 -v "key1=value1" ...
 ```
 
 ---
 
 ## Flags
 
-| Flag             | Description                                                      |
-| ---------------- | ---------------------------------------------------------------- |
-| `-s`, `--source` | Source directory containing `.mimic` files (default: `./.mimic`) |
-| `-t`, `--target` | Target directory where files will be generated (default: `.`)    |
-| `-v`, `--var`    | Define variables manually (`key=value`)                          |
+| Flag | Long Flag | Description | Default |
+| :--- | :--- | :--- | :--- |
+| `-s` | `--source` | Set the source directory path of `.mimic` files | `./.mimic` |
+| `-t` | `--target` | Set the target path where all files will be copied | `.` |
+| `-v` | `--var` | Set a var directly by passing as a `key=value` pair | |
+| | `--var-prefix` | Set the var pattern prefix | `{{` |
+| | `--var-sufix` | Set the var pattern sufix | `}}` |
 
 ---
 

@@ -245,11 +245,11 @@ func (m *Mimic) write(name string, data string) {
 	}
 }
 
-const SourceFlagUsage = "Set the source directory path of .mimic files"
-const TargetFlagUsage = "Set the target path where all files will be copied"
+const SourceFlagUsage = "Set the source directory path of .mimic files (default ./.mimic)"
+const TargetFlagUsage = "Set the target path where all files will be copied (default .)"
 const VarFlagUsage = "Set a var directly by passing as a key=value pair"
-const VarPrefixFlagUsage = "Set the var pattern prefix (default \\{\\{)"
-const VarSufixFlagUsage = "Set the var pattern sufix (default \\}\\})"
+const VarPrefixFlagUsage = "Set the var pattern prefix (default \"{{\")"
+const VarSufixFlagUsage = "Set the var pattern sufix (default \"}}\")"
 
 func main() {
 	flag.Usage = func() {
