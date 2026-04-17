@@ -18,24 +18,30 @@ Variables can be used in:
 
 ## Variable Syntax
 
-Variables use a double-brace format:
+Variables use double curly braces and are named in PascalCase format:
 
-```
-{{variable}}
+```txt
+{{Variable}}
 ```
 
 Examples:
 
-```
-{{name}}
-{{domain}}
-{{class}}
+```txt
+{{Name}}
+{{Domain}}
+{{Class}}
 ```
 
-Whitespace is allowed but treated literally:
+Whitespace is allowed for modifiers:
 
-```
-{{ name }}
+```txt
+{{camel Name}}  // fooBarBaz
+{{pascal Name}} // FooBarBaz
+{{snake Name}}  // foo_bar_baz
+{{kebab Name}}  // foo-bar-baz
+{{lower Name}}  // foobarbaz
+{{upper Name}}  // FOOBARBAZ
+{{dot Name}}    // foo.bar.baz
 ```
 
 ---
@@ -63,12 +69,13 @@ mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
 ## How It Works
 
 1. Mimic scans the source directory for `.mimic` files
-2. It detects variables like `{{name}}`, `{{class}}`, etc.
+2. It detects variables like `{{Package}}`, `{{Class}}`, etc.
 3. Values are resolved:
 
    * From `--var` flags if provided
    * Otherwise via interactive prompts
-4. Files are generated in the target directory with variables replaced
+4. Values are modified (optional)
+5. Files are generated in the target directory with variables replaced
 
 ---
 
@@ -77,7 +84,7 @@ mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
 If a variable is not provided via CLI, Mimic will prompt:
 
 ```bash
-Please enter a value for {{name}}:
+$ Please enter a value for "Name":
 ```
 
 ---

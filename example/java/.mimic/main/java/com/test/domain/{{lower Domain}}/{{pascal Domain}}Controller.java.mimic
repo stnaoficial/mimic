@@ -4,16 +4,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Path("/api/v1/{{kebab Domain}}")
-public interface {{Domain}}Controller {
+public interface {{pascal Domain}}Controller {
 
     @PostMapping()
-    public String create(@RequestBody {{Domain}}Request {{camel Domain}}Request) {
-        return "{{Domain}} created"
+    public String create(@RequestBody {{pascal Domain}}Request {{camel Domain}}Request) {
+        return "{{pascal Domain}} created"
     }
 
     @GetMapping("/{id}")
     public String read(@PathVariable String {{camel Domain}}Id) {
-        return "{{Domain}} found"
+        return "{{pascal Domain}} found"
     }
 
 }

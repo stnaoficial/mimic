@@ -160,7 +160,7 @@ func (m *Mimic) collect(name string) {
 		_, name := m.parse(submatch[1])
 
 		if _, exists := m.varMap[name]; !exists {
-			m.varMap[name] = cli.MustAsk(fmt.Sprintf("Please enter a value for %s: ", name))
+			m.varMap[name] = cli.MustAsk(fmt.Sprintf("Please enter a value for \"%s\": ", name))
 		}
 	}
 
@@ -185,7 +185,7 @@ func (m *Mimic) parse(value string) (string, string) {
 	}
 
 	if modifier != "" && !slices.Contains(modifiers, modifier) {
-		cli.LogAndExit(fmt.Sprintf("Invalid variable modifier (modifiers: %s)", strings.Join(modifiers, ", ")), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Invalid variable modifier\"%s\" (modifiers: %s)", modifier, strings.Join(modifiers, ", ")), cli.LogSeverityError)
 	}
 
 	if !util.IsPascal(name) {
@@ -262,8 +262,6 @@ func (m *Mimic) write(name string, data string) {
 	if err := os.WriteFile(name, []byte(data), 0644); err != nil {
 		cli.LogAndExit(fmt.Sprintf("Could not create %s", name), cli.LogSeverityError)
 	}
-
-	cli.LogFileNameAdded(name)
 }
 
 func main() {

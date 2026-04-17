@@ -32,12 +32,6 @@ func LogFileNameAt(name string) {
 	fmt.Print(ANSIColorCodeReset)
 }
 
-func LogFileNameAdded(name string) {
-	fmt.Print(ANSIColorCodeGreen)
-	fmt.Printf("+ %s\n", name)
-	fmt.Print(ANSIColorCodeReset)
-}
-
 func LogFileDataAdded(data string) {
 	fmt.Print(ANSIColorCodeGreen)
 
