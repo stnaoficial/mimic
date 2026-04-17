@@ -277,13 +277,13 @@ func main() {
 	flag.Var(&varFlags, "v", VarFlagUsage)
 	flag.Var(&varFlags, "var", VarFlagUsage)
 
-	varPrefix := *flag.String("var-prefix", "{{", VarPrefixFlagUsage)
-	varSufix := *flag.String("var-sufix", "}}", VarSufixFlagUsage)
-	varRegex := regexp.MustCompile(regexp.QuoteMeta(varPrefix) + `\s*(.*?)\s*` + regexp.QuoteMeta(varSufix))
+	varPrefix := flag.String("var-prefix", "{{", VarPrefixFlagUsage)
+	varSufix := flag.String("var-sufix", "}}", VarSufixFlagUsage)
 
 	flag.CommandLine.SetOutput(io.Discard)
-
 	flag.Parse()
+
+	varRegex := regexp.MustCompile(regexp.QuoteMeta(*varPrefix) + `\s*(.*?)\s*` + regexp.QuoteMeta(*varSufix))
 
 	if flag.NArg() > 0 {
 		flag.Usage()
