@@ -84,7 +84,7 @@ mimic -s ./.mimic -t ./output -v key0=value0 -v key1=value1 ...
 If a variable is not provided via CLI, Mimic will prompt:
 
 ```bash
-$ Please enter a value for "Name":
+$ Please enter a value for "Domain":
 ```
 
 ---
@@ -97,9 +97,8 @@ Provide variables directly:
 ./mimic \
   -s ./templates/.mimic \
   -t ./output \
-  -v domain=user \
-  -v class=UserEntity \
-  -v interface=UserModel
+  -v Domain=User \
+  -v Version=1.0.0
 ```
 
 ## Behavior Details
@@ -112,6 +111,6 @@ Provide variables directly:
 
 ## Limitations
 
-* Only supports simple `{{variable}}` replacement
+* Only supports simple `{{Name}}` and `{{modfier Name}}` variable replacement
 * No conditionals or loops
 * No built-in validation for variable values
