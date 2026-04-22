@@ -3,6 +3,6 @@ build: main.go
 
 example.java: ./bin/mimic
 	./bin/mimic \
-		-s ./example/java/.mimic \
-		-t ./example/java \
-		-v domain="Foo Bar Baz"
+		-v domain="Foo Bar Baz" \
+		./example/java/.mimic \
+		./example/java

@@ -63,20 +63,19 @@ Modifiers can be nested in different combinations:
 Basic usage:
 
 ```bash
-$ mimic -s ./.mimic -t ./output -v key0=value0 -v "key1=value1" ...
+$ mimic            # Without specifing the source and target path
+$ mimic ./.mimic . # Specifing the source and target path
 ```
-
----
 
 ## Flags
 
 | Flag | Long Flag | Description | Default |
 | :--- | :--- | :--- | :--- |
-| `-s` | `--source` | Set the source directory path of `.mimic` files | `./.mimic` |
-| `-t` | `--target` | Set the target path where all files will be copied | `.` |
 | `-v` | `--var` | Set a var directly by passing as a `key=value` pair | |
 | | `--var-prefix` | Set the var pattern prefix | `{{` |
 | | `--var-sufix` | Set the var pattern sufix | `}}` |
+| `-h` | `--help` | Print Help (this message) and exit
+| | `--version` | Print version information and exit
 
 ---
 

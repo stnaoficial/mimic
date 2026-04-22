@@ -39,13 +39,13 @@ func NewMimic(source string, target string, varMap map[string]string, varRegex *
 	sourceFile, err := os.Stat(source)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to get information about %s", source), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", source), cli.LogSeverityError)
 	}
 
 	targetFile, err := os.Stat(target)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to get information about %s", target), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", target), cli.LogSeverityError)
 	}
 
 	return &Mimic{
@@ -60,16 +60,16 @@ func NewMimic(source string, target string, varMap map[string]string, varRegex *
 }
 
 func (m *Mimic) Scan() {
-	cli.Log(fmt.Sprintf("Scanning files from the source directory %s...", m.source), cli.LogSeverityInfo)
+	cli.Log(fmt.Sprintf("Scanning files from the source path %s...", m.source), cli.LogSeverityInfo)
 
 	names, err := m.walk(m.source)
 
 	if err != nil {
-		cli.LogAndExit("Unable to walk into the given source directory path", cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to walk into the source path %s", m.source), cli.LogSeverityError)
 	}
 
 	if len(names) == 0 {
-		cli.LogAndExit("No .mimic files found in the specified source directory", cli.LogSeverityWarn)
+		cli.LogAndExit(fmt.Sprintf("No .mimic files found in the source path %s", m.source), cli.LogSeverityWarn)
 	}
 
 	for _, name := range names {
@@ -107,7 +107,7 @@ func (m *Mimic) collect(name string) {
 	data, err := os.ReadFile(name)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to read %s", name), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain data from file %s", name), cli.LogSeverityError)
 	}
 
 	submatches := m.varRegex.FindAllStringSubmatch(name+string(data), -1)
@@ -157,7 +157,7 @@ func (m *Mimic) parse(value string) ([]string, string) {
 	name := current
 
 	if name == "" {
-		cli.LogAndExit("Variable name cannot be empty", cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to parse variable %s", value), cli.LogSeverityError)
 	}
 
 	// Reverse so innermost is first
@@ -196,14 +196,14 @@ func (m *Mimic) modify(modifiers []string, value string) string {
 	return result
 }
 
-func (m *Mimic) Copy() {
-	cli.Log(fmt.Sprintf("Copying files to the target directory %s...", m.target), cli.LogSeverityInfo)
+func (m *Mimic) Start() {
+	cli.Log(fmt.Sprintf("Starting to mimic files to the target path %s...", m.target), cli.LogSeverityInfo)
 
 	for name, data := range m.fileMap {
 		rel, err := filepath.Rel(m.source, name)
 
 		if err != nil {
-			cli.LogAndExit("Unable to resolve relative path", cli.LogSeverityError)
+			cli.LogAndExit(fmt.Sprintf("Unable to relate path %s to %s", m.source, name), cli.LogSeverityError)
 		}
 
 		name = filepath.Join(m.target, rel[:len(rel)-len(".mimic")])
@@ -236,60 +236,76 @@ func (m *Mimic) write(name string, data string) {
 	dirname := filepath.Dir(name)
 
 	if err := os.MkdirAll(dirname, 0755); err != nil {
-		cli.LogAndExit(fmt.Sprintf("Could not create %s", name), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to create file %s", name), cli.LogSeverityError)
 	}
 
 	if err := os.WriteFile(name, []byte(data), 0644); err != nil {
-		cli.LogAndExit(fmt.Sprintf("Could not create %s", name), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to create file %s", name), cli.LogSeverityError)
 	}
 }
 
-const SourceFlagUsage = "Set the source directory path of .mimic files (default ./.mimic)"
-const TargetFlagUsage = "Set the target path where all files will be copied (default .)"
-const VarFlagUsage = "Set a var directly by passing as a key=value pair"
-const VarPrefixFlagUsage = "Set the var pattern prefix (default \"{{\")"
-const VarSufixFlagUsage = "Set the var pattern sufix (default \"}}\")"
+const VarFlagUsage = "Set a variable directly by passing a key=value pair"
+const VarPrefixFlagUsage = "Set the variable pattern prefix (default \"{{\")"
+const VarSufixFlagUsage = "Set the variable pattern sufix (default \"}}\")"
+
+const HelpFlagUsage = "Print Help (this message) and exit"
+const VersionFlagUsage = "Print version information and exit"
+
+func PrintVersionAndExit(_ string) {
+	fmt.Printf("Mimic version 1.0.0-beta\n")
+	os.Exit(0)
+}
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: mimic [-s | --source] [-t | --target] [-v | --var]\n")
+		fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... SOURCE TARGET\n")
 		fmt.Fprintf(os.Stderr, "Mimic interpret .mimic files in the source path (./.mimic directory by default) and create copies of them in the target path (the current directory by default).\n\n")
-		fmt.Fprintf(os.Stderr, "Configure how to start mimicking files across your entire filesystem\n")
-		fmt.Fprintf(os.Stderr, "  -s, --source    %s\n", SourceFlagUsage)
-		fmt.Fprintf(os.Stderr, "  -t, --target    %s\n", TargetFlagUsage)
-		fmt.Fprintf(os.Stderr, "  -v, --var       %s\n", VarFlagUsage)
+		fmt.Fprintf(os.Stderr, "Provide variables directly\n")
+		fmt.Fprintf(os.Stderr, "  -v, --var       %s\n\n", VarFlagUsage)
+		fmt.Fprintf(os.Stderr, "Configure how to start mimicking files in the source path\n")
 		fmt.Fprintf(os.Stderr, "  --var-prefix    %s\n", VarPrefixFlagUsage)
 		fmt.Fprintf(os.Stderr, "  --var-sufix     %s\n\n", VarSufixFlagUsage)
+		fmt.Fprintf(os.Stderr, "Get more information\n")
+		fmt.Fprintf(os.Stderr, "  -h, --help    %s\n", HelpFlagUsage)
+		fmt.Fprintf(os.Stderr, "  --version     %s\n\n", VersionFlagUsage)
 	}
 
-	var sourceFlag string
-	var targetFlag string
-
-	flag.StringVar(&sourceFlag, "s", "./.mimic", SourceFlagUsage)
-	flag.StringVar(&sourceFlag, "source", "./.mimic", SourceFlagUsage)
-
-	flag.StringVar(&targetFlag, "t", ".", TargetFlagUsage)
-	flag.StringVar(&targetFlag, "target", ".", TargetFlagUsage)
-
-	varFlags := make(util.FlagMap)
-
-	flag.Var(&varFlags, "v", VarFlagUsage)
-	flag.Var(&varFlags, "var", VarFlagUsage)
+	source := "./.mimic"
+	target := "."
+	vars := make(util.FlagMap)
+	flag.Var(&vars, "v", VarFlagUsage)
+	flag.Var(&vars, "var", VarFlagUsage)
 
 	varPrefix := flag.String("var-prefix", "{{", VarPrefixFlagUsage)
 	varSufix := flag.String("var-sufix", "}}", VarSufixFlagUsage)
+	varRegex := regexp.MustCompile(regexp.QuoteMeta(*varPrefix) + `\s*(.*?)\s*` + regexp.QuoteMeta(*varSufix))
+
+	version := flag.Bool("version", false, VersionFlagUsage)
 
 	flag.CommandLine.SetOutput(io.Discard)
 	flag.Parse()
 
-	varRegex := regexp.MustCompile(regexp.QuoteMeta(*varPrefix) + `\s*(.*?)\s*` + regexp.QuoteMeta(*varSufix))
+	if *version {
+		fmt.Printf("Mimic version 1.0.0-beta\n")
+		os.Exit(0)
+	}
 
-	if flag.NArg() > 0 {
+	args := flag.Args()
+
+	if len(args) >= 1 {
+		source = args[0]
+	}
+
+	if len(args) >= 2 {
+		target = args[1]
+	}
+
+	if len(args) > 2 {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	mimic := NewMimic(sourceFlag, targetFlag, varFlags, varRegex)
+	mimic := NewMimic(source, target, vars, varRegex)
 
 	mimic.Scan()
 
@@ -297,7 +313,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	mimic.Copy()
+	mimic.Start()
 
 	os.Exit(0)
 }
