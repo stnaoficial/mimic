@@ -1,8 +1,16 @@
-# Mimic
+<h1 align="center">
+  <img alt="Standard Schema fire logo" loading="lazy" width="50" height="50" decoding="async" data-nimg="1" style="color:transparent" src="./spec/favicon.svg">
+  </br>
+  Mimic
+</h1>
+<p align="center">
+  Templating Language
+  <br/>
+  <a href="https://github.com/stnaoficial/mimic">github.com</a>
+</p>
+<br/>
 
 Mimic interprets `.mimic` files in the source path (`./.mimic` directory by default) and creates copies of them in the target path (the current directory by default).
-
----
 
 ## Overview
 
