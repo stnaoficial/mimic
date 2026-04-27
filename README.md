@@ -1,14 +1,4 @@
-<h1 align="center">
-  <img alt="Standard Schema fire logo" loading="lazy" width="50" height="50" decoding="async" data-nimg="1" style="color:transparent" src="./public/icon.png">
-  </br>
-  Mimic
-</h1>
-<p align="center">
-  Mimic Templating Library
-  <br/>
-  <a href="https://github.com/stnaoficial/mimic">github.com</a>
-</p>
-<br/>
+# Mimic Templating Library
 
 ## Overview
 
