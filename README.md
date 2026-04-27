@@ -1,20 +1,18 @@
 <h1 align="center">
-  <img alt="Standard Schema fire logo" loading="lazy" width="50" height="50" decoding="async" data-nimg="1" style="color:transparent" src="./spec/favicon.svg">
+  <img alt="Standard Schema fire logo" loading="lazy" width="50" height="50" decoding="async" data-nimg="1" style="color:transparent" src="./public/icon.png">
   </br>
   Mimic
 </h1>
 <p align="center">
-  Templating Language
+  Mimic Templating Library
   <br/>
   <a href="https://github.com/stnaoficial/mimic">github.com</a>
 </p>
 <br/>
 
-Mimic interprets `.mimic` files in the source path (`./.mimic` directory by default) and creates copies of them in the target path (the current directory by default).
-
 ## Overview
 
-Mimic scans a directory for `.mimic` files, replaces variables defined in templates, and writes the resulting files into a target directory while preserving the structure.
+Mimic interpret `.mimic` files in the source path (`./.mimic` directory by default) and generate copies of them in the target path (the current directory by default).
 
 Variables can be used in:
 
@@ -22,49 +20,29 @@ Variables can be used in:
 * File names
 * Directory names
 
----
-
 ## Variable Syntax
 
-Variables use double curly braces:
-
 ```plaintext
-{{ name }}
+{{ something }}
 ```
 
-Examples:
+Variables can be modified:
 
 ```plaintext
-{{ name }}
-{{ Name }}
-{{ This is a name }}
+{{ upper(something) }}
 ```
 
-Modifiers:
+Modifiers can be nested:
 
 ```plaintext
-{{ camel(some name) }}  // someName
-{{ pascal(some name) }} // SomeName
-{{ snake(some name) }}  // some_name
-{{ kebab(some name) }}  // some-name
-{{ dot(some name) }}    // some.name
-{{ flat(some name) }}   // somename
-{{ lower(some name) }}  // some name
-{{ upper(some name) }}  // SOME NAME
+{{ upper(kebab(something)) }}
 ```
 
-Modifiers can be nested in different combinations:
+# Examples
 
-```plaintext
-{{ upper(snake(some name)) }} // SOME_NAME
-{{ upper(kebab(some name)) }} // SOME-NAME
-{{ upper(dot(some name)) }} // SOME.NAME
-{{ lower(snake(some name)) }} // some_name
-{{ lower(kebab(some name)) }} // some-name
-{{ lower(dot(some name)) }} // some.name
-```
-
----
+1. [Basic HTML example](./example/01_basic_html_usage/)
+2. [Basic React.js example](./example/02_basic_reactjs_usage/)
+3. [Basic Vue.js example](./example/03_basic_vuejs_usage/)
 
 ## Usage
 
@@ -80,43 +58,46 @@ $ mimic ./.mimic . # Specifing the source and target path
 | Flag | Long Flag | Description | Default |
 | :--- | :--- | :--- | :--- |
 | `-v` | `--var` | Set a var directly by passing as a `key=value` pair | |
-| | `--var-prefix` | Set the var pattern prefix | `{{` |
-| | `--var-sufix` | Set the var pattern sufix | `}}` |
+| | `--expr-open` | Set the open expression syntax | `{{` |
+| | `--expr-close` | Set the close expression syntax | `}}` |
 | `-h` | `--help` | Print Help (this message) and exit
 | | `--version` | Print version information and exit
-
----
 
 ## How It Works
 
 1. Mimic scans the source directory for `.mimic` files
 2. It detects variables like `{{ name }}`, `{{ lower(name) }}`, etc.
-3. Values are resolved:
+3. Expressions are evaluated:
 
    * From `--var` flags if provided
    * Otherwise via interactive prompts
 4. Values are modified (optional)
-5. Files are generated in the target directory with variables replaced
-
----
+5. Files are generated in the target directory with variables evaluated
 
 ## Interactive Mode
 
 If a variable is not provided via CLI, Mimic will prompt:
 
-```bash
-$ Please enter a value for "name":
-$ Please enter a value for "This is a name":
+```txt
+{{ pascal(name) }}
 ```
 
----
+```bash
+$ Please enter a value for "name": Some name or description
+```
+
+This will be evaluated as something like:
+
+```txt
+SomeNameOrDescription
+```
 
 ## Non-Interactive Mode
 
 Provide variables directly:
 
 ```bash
-mimic -v name=value -v "This is a name = This is a value"
+mimic -v name=value -v "name=value" -v name="value" ...
 ```
 
 ## Behavior Details

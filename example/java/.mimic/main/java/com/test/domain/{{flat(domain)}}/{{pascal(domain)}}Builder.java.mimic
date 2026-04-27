@@ -1,7 +1,0 @@
-package com.test.domain.{{ flat(domain) }};
-
-public class {{ pascal(domain) }}Builder {
-
-    protected final String id;
-
-}
