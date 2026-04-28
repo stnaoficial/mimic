@@ -86,7 +86,7 @@ func ToDot(s string) string {
 }
 
 func ToFlat(s string) string {
-	return strings.Join(strings.Fields(s), "")
+	return strings.ToLower(strings.Join(strings.Fields(s), ""))
 }
 
 func ToLower(s string) string {
