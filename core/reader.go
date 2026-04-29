@@ -5,15 +5,18 @@ import (
 	"mimic/core/cli"
 	"mimic/core/util"
 	"os"
+	"path/filepath"
 )
 
 type Reader struct {
-	fileMap util.FileMap
+	basepath string
+	fileMap  util.FileMap
 }
 
 func NewReader() *Reader {
 	return &Reader{
-		fileMap: make(util.FileMap),
+		basepath: "",
+		fileMap:  make(util.FileMap),
 	}
 }
 
@@ -44,24 +47,38 @@ func (r *Reader) readFile(filename string) {
 		cli.LogAndExit(fmt.Sprintf("Unable to obtain data from file %s", filename), cli.LogSeverityError)
 	}
 
-	r.fileMap[filename] = string(filedata)
+	relpath, err := filepath.Rel(r.basepath, filename)
+
+	if err != nil {
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain relative path for file %s", filename), cli.LogSeverityError)
+	}
+
+	r.fileMap[relpath] = string(filedata)
 }
 
-func (r *Reader) Read(pathname string) util.FileMap {
+func (r *Reader) Read(sourcepath string) util.FileMap {
 	for k := range r.fileMap {
 		delete(r.fileMap, k)
 	}
 
-	pathinfo, err := os.Stat(pathname)
+	var basepath = sourcepath
+
+	pathinfo, err := os.Stat(sourcepath)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", pathname), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", sourcepath), cli.LogSeverityError)
 	}
 
+	if !pathinfo.IsDir() {
+		basepath = filepath.Dir(sourcepath)
+	}
+
+	r.basepath = basepath
+
 	if pathinfo.IsDir() {
-		r.readDirectory(pathname)
+		r.readDirectory(sourcepath)
 	} else {
-		r.readFile(pathname)
+		r.readFile(sourcepath)
 	}
 
 	return r.fileMap

@@ -40,25 +40,19 @@ func (w *Writer) write(filename string, filedata string) {
 	w.fileMap[filename] = filedata
 }
 
-func (w *Writer) Write(target string, fileMap util.FileMap) util.FileMap {
-	cli.Log(fmt.Sprintf("Writing files to directory %s ...", target), cli.LogSeverityInfo)
-
+func (w *Writer) Write(targetpath string, fileMap util.FileMap) util.FileMap {
 	for k := range w.fileMap {
 		delete(w.fileMap, k)
 	}
 
+	cli.Log(fmt.Sprintf("Writing files to directory %s ...", targetpath), cli.LogSeverityInfo)
+
 	for filename, filedata := range fileMap {
-		w.comp.Env.Vars["__DIRNAME__"] = filepath.Dir(filename)
-		w.comp.Env.Vars["__FILENAME__"] = filename
-
 		if strings.Contains(filename, ".mimic") {
-			filename = filepath.Join(target, strings.TrimRight(filename, ".mimic"))
-
-			w.comp.Env.Vars["__FILENAME__"] = filename
-
+			filename = filepath.Join(targetpath, strings.TrimRight(filename, ".mimic"))
 			filedata = w.comp.Compile(lang.NewBuffer(filename, filedata))
 		} else {
-			filename = filepath.Join(target, filename)
+			filename = filepath.Join(targetpath, filename)
 		}
 
 		filename = w.comp.Compile(lang.NewBuffer("<filename>", filename))

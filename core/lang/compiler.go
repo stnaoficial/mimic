@@ -16,7 +16,7 @@ func NewCompiler() *Compiler {
 	return &Compiler{
 		Env:       env,
 		evaluator: NewEvaluator(env),
-		expr:      NewExpressionConfigurable("{{", "}}"),
+		expr:      NewExpressionConfigurable(DefaultOpenExpr, DefaultCloseExpr),
 	}
 }
 
