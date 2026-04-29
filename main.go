@@ -12,13 +12,15 @@ import (
 	"os"
 )
 
-const varFlagUsage = "Set a variable directly by passing a key=value pair"
+const (
+	varFlagUsage = "Set a variable directly by passing a key=value pair"
 
-const exprOpenFlagUsage = "Set the open expression syntax (default \"{{\")"
-const exprCloseFlagUsage = "Set the close expression syntax (default \"}}\")"
+	exprOpenFlagUsage  = "Set the open expression syntax (default \"{{\")"
+	exprCloseFlagUsage = "Set the close expression syntax (default \"}}\")"
 
-const helpFlagUsage = "Print Help (this message) and exit"
-const versionFlagUsage = "Print version information and exit"
+	helpFlagUsage    = "Print Help (this message) and exit"
+	versionFlagUsage = "Print version information and exit"
+)
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... SOURCE TARGET\n")
@@ -110,9 +112,7 @@ func main() {
 	env := lang.NewEnvironment()
 	maps.Copy(env.Vars, vars)
 
-	expr := lang.NewExpression(*exprOpen, *exprClose)
-
-	comp := lang.NewCompiler(env, expr)
+	comp := lang.NewCompilerConfigurable(env, lang.NewExpressionConfigurable(*exprOpen, *exprClose))
 
 	executor := core.NewExecutor(source, target, comp)
 

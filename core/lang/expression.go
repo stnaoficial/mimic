@@ -5,7 +5,19 @@ type Expression struct {
 	Close string
 }
 
-func NewExpression(open string, close string) *Expression {
+const (
+	DefaultOpenExpr  = "{{"
+	DefaultCloseExpr = "}}"
+)
+
+func NewExpression() *Expression {
+	return &Expression{
+		Open:  DefaultOpenExpr,
+		Close: DefaultCloseExpr,
+	}
+}
+
+func NewExpressionConfigurable(open string, close string) *Expression {
 	return &Expression{
 		Open:  open,
 		Close: close,

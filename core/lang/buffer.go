@@ -23,46 +23,46 @@ func NewBuffer(name string, data string) *Buffer {
 	}
 }
 
-func (l *Buffer) Peek() rune {
-	if l.Index >= len(l.Data) {
+func (b *Buffer) Peek() rune {
+	if b.Index >= len(b.Data) {
 		return 0
 	}
 
-	return l.Data[l.Index]
+	return b.Data[b.Index]
 }
 
-func (l *Buffer) Advance() rune {
-	ch := l.Peek()
+func (b *Buffer) Advance() rune {
+	ch := b.Peek()
 
-	l.Index++
+	b.Index++
 
 	if ch == '\n' {
-		l.Line++
-		l.Column = 1
+		b.Line++
+		b.Column = 1
 	} else {
-		l.Column++
+		b.Column++
 	}
 
 	return ch
 }
 
-func (f *Buffer) lineText() string {
-	start := f.Index
+func (b *Buffer) lineText() string {
+	start := b.Index
 
-	for start > 0 && f.Data[start-1] != '\n' {
+	for start > 0 && b.Data[start-1] != '\n' {
 		start--
 	}
 
-	end := f.Index
+	end := b.Index
 
-	for end < len(f.Data) && f.Data[end] != '\n' {
+	for end < len(b.Data) && b.Data[end] != '\n' {
 		end++
 	}
 
-	return f.expandLineTabs(f.Data[start:end])
+	return b.expandLineTabs(b.Data[start:end])
 }
 
-func (f *Buffer) expandLineTabs(line []rune) string {
+func (b *Buffer) expandLineTabs(line []rune) string {
 	const tabSize = 4
 
 	var result strings.Builder
@@ -82,7 +82,7 @@ func (f *Buffer) expandLineTabs(line []rune) string {
 	return result.String()
 }
 
-func (f *Buffer) buildCaretLine(line string) string {
+func (b *Buffer) buildCaretLine(line string) string {
 	const tabSize = 4
 
 	var result strings.Builder
@@ -90,7 +90,7 @@ func (f *Buffer) buildCaretLine(line string) string {
 	currentCol := 1
 
 	for _, ch := range line {
-		if currentCol >= f.Column {
+		if currentCol >= b.Column {
 			break
 		}
 
@@ -110,11 +110,11 @@ func (f *Buffer) buildCaretLine(line string) string {
 	return result.String()
 }
 
-func (f *Buffer) String() string {
-	lineText := f.lineText()
+func (b *Buffer) String() string {
+	lineText := b.lineText()
 
 	return fmt.Sprintf(
 		"%s:%d:%d\n%s\n%s",
-		f.Name, f.Line, f.Column,
-		lineText, f.buildCaretLine(lineText))
+		b.Name, b.Line, b.Column,
+		lineText, b.buildCaretLine(lineText))
 }

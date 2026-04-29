@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 )
 
+type FileMap = map[string]string
+
 func DirectoryWalk(root string) ([]string, error) {
 	filenames := []string{}
 

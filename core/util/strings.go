@@ -5,13 +5,6 @@ import (
 	"unicode"
 )
 
-const (
-	SingleQuote      = "'"
-	DoubleQuote      = "\""
-	OpenParentheses  = "("
-	CloseParentheses = ")"
-)
-
 func IsQuoted(s string) bool {
 	if len(s) < 2 {
 		return false

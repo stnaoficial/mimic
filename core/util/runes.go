@@ -1,5 +1,10 @@
 package util
 
+const (
+	SingleQuote = "'"
+	DoubleQuote = "\""
+)
+
 func IsLetter(ch rune) bool {
 	if ch >= 'a' && ch <= 'z' {
 		return true

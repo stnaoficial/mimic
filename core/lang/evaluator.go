@@ -6,26 +6,30 @@ import (
 )
 
 type Evaluator struct {
-	env *Environment
+	Env *Environment
 }
 
 func NewEvaluator(env *Environment) *Evaluator {
 	return &Evaluator{
-		env: env,
+		Env: env,
 	}
+}
+
+func (e *Evaluator) abort(cause string) {
+	cli.LogAndExit(cause, cli.LogSeverityError)
 }
 
 func (e *Evaluator) Eval(node Node) string {
 	switch n := node.(type) {
 
 	case Identifier:
-		if value, ok := e.env.Vars[n.Name]; ok {
+		if value, ok := e.Env.Vars[n.Name]; ok {
 			return value
 		}
 
 		value := cli.MustAsk(fmt.Sprintf("Please enter a value for \"%s\": ", n.Name))
 
-		e.env.Vars[n.Name] = value
+		e.Env.Vars[n.Name] = value
 
 		return value
 
@@ -33,10 +37,10 @@ func (e *Evaluator) Eval(node Node) string {
 		return n.Value
 
 	case CallExpression:
-		fn, ok := e.env.Funcs[n.Name]
+		fn, ok := e.Env.Funcs[n.Name]
 
 		if !ok {
-			cli.LogAndExit(fmt.Sprintf("Unexpected function call \"%s\"", n.Name), cli.LogSeverityError)
+			e.abort(fmt.Sprintf("Unexpected function call \"%s\"", n.Name))
 		}
 
 		var args []string

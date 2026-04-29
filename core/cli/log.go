@@ -35,10 +35,9 @@ func LogFileNameAt(name string) {
 func LogFileDataAdded(data string) {
 	fmt.Print(ANSIColorCodeGreen)
 
-	// must be updated later for other OS compatibility
 	for line := range strings.SplitSeq(data, "\n") {
 		fmt.Printf("+ %s\n", line)
 	}
 
-	fmt.Printf("%s\n", ANSIColorCodeReset)
+	fmt.Println(ANSIColorCodeReset)
 }

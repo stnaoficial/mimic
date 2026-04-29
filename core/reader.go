@@ -18,7 +18,7 @@ func NewReader() *Reader {
 }
 
 func (r *Reader) readDirectory(dirname string) {
-	cli.Log(fmt.Sprintf("Reading directory %s...", dirname), cli.LogSeverityInfo)
+	cli.Log(fmt.Sprintf("Reading directory %s ...", dirname), cli.LogSeverityInfo)
 
 	filenames, err := util.DirectoryWalk(dirname)
 
@@ -36,7 +36,7 @@ func (r *Reader) readDirectory(dirname string) {
 }
 
 func (r *Reader) readFile(filename string) {
-	cli.Log(fmt.Sprintf("Reading file %s...", filename), cli.LogSeverityInfo)
+	cli.Log(fmt.Sprintf("Reading file %s ...", filename), cli.LogSeverityInfo)
 
 	filedata, err := os.ReadFile(filename)
 
@@ -47,12 +47,18 @@ func (r *Reader) readFile(filename string) {
 	r.fileMap[filename] = string(filedata)
 }
 
-func (r *Reader) Read(pathname string, pathInfo os.FileInfo) util.FileMap {
+func (r *Reader) Read(pathname string) util.FileMap {
 	for k := range r.fileMap {
 		delete(r.fileMap, k)
 	}
 
-	if pathInfo.IsDir() {
+	pathinfo, err := os.Stat(pathname)
+
+	if err != nil {
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", pathname), cli.LogSeverityError)
+	}
+
+	if pathinfo.IsDir() {
 		r.readDirectory(pathname)
 	} else {
 		r.readFile(pathname)

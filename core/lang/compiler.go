@@ -5,23 +5,30 @@ import (
 )
 
 type Compiler struct {
-	Evaluator *Evaluator
 	Env       *Environment
-	Expr      *Expression
+	evaluator *Evaluator
+	expr      *Expression
 }
 
-func NewCompiler(env *Environment, expr *Expression) *Compiler {
-	eval := NewEvaluator(env)
+func NewCompiler() *Compiler {
+	env := NewEnvironment()
 
 	return &Compiler{
-		Evaluator: eval,
 		Env:       env,
-		Expr:      expr,
+		evaluator: NewEvaluator(env),
+		expr:      NewExpressionConfigurable("{{", "}}"),
 	}
 }
 
-func (i *Compiler) Compile(buffer *Buffer) string {
-	lexer := NewLexer(buffer, i.Expr)
+func NewCompilerConfigurable(env *Environment, expr *Expression) *Compiler {
+	return &Compiler{
+		evaluator: NewEvaluator(env),
+		expr:      expr,
+	}
+}
+
+func (c *Compiler) Compile(buffer *Buffer) string {
+	lexer := NewLexer(buffer, c.expr)
 
 	var result strings.Builder
 
@@ -42,7 +49,7 @@ func (i *Compiler) Compile(buffer *Buffer) string {
 
 			ast := parser.Parse()
 
-			value := i.Evaluator.Eval(ast)
+			value := c.evaluator.Eval(ast)
 
 			result.WriteString(value)
 		}

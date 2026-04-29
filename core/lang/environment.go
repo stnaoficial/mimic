@@ -12,11 +12,11 @@ type Environment struct {
 	Funcs map[string]Function
 }
 
-func getReservedVariables() map[string]Variable {
+func ReservedVariables() map[string]Variable {
 	return map[string]Variable{}
 }
 
-func getReservedFunctions() map[string]Function {
+func ReservedFunctions() map[string]Function {
 	return map[string]Function{
 		"sentence": func(args []string) string {
 			if len(args) == 0 {
@@ -77,7 +77,7 @@ func getReservedFunctions() map[string]Function {
 
 func NewEnvironment() *Environment {
 	return &Environment{
-		Vars:  getReservedVariables(),
-		Funcs: getReservedFunctions(),
+		Vars:  ReservedVariables(),
+		Funcs: ReservedFunctions(),
 	}
 }

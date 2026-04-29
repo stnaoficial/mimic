@@ -24,48 +24,46 @@ func NewWriter(comp *lang.Compiler) *Writer {
 	}
 }
 
-func (w *Writer) Write(source string, sourceInfo os.FileInfo, target string, comp *lang.Compiler, fileMap util.FileMap) util.FileMap {
-	cli.Log(fmt.Sprintf("Writing files to directory %s...", target), cli.LogSeverityInfo)
+func (w *Writer) write(filename string, filedata string) {
+	cli.Log(fmt.Sprintf("Writing file %s ...", filename), cli.LogSeverityInfo)
+
+	dirname := filepath.Dir(filename)
+
+	if err := os.MkdirAll(dirname, 0755); err != nil {
+		cli.LogAndExit(fmt.Sprintf("Unable to create directory %s", dirname), cli.LogSeverityError)
+	}
+
+	if err := os.WriteFile(filename, []byte(filedata), 0644); err != nil {
+		cli.LogAndExit(fmt.Sprintf("Unable to write file %s", filename), cli.LogSeverityError)
+	}
+
+	w.fileMap[filename] = filedata
+}
+
+func (w *Writer) Write(target string, fileMap util.FileMap) util.FileMap {
+	cli.Log(fmt.Sprintf("Writing files to directory %s ...", target), cli.LogSeverityInfo)
 
 	for k := range w.fileMap {
 		delete(w.fileMap, k)
 	}
 
 	for filename, filedata := range fileMap {
-		var basepath = source
+		w.comp.Env.Vars["__DIRNAME__"] = filepath.Dir(filename)
+		w.comp.Env.Vars["__FILENAME__"] = filename
 
-		if !sourceInfo.IsDir() {
-			basepath = filepath.Dir(basepath)
-		}
+		if strings.Contains(filename, ".mimic") {
+			filename = filepath.Join(target, strings.TrimRight(filename, ".mimic"))
 
-		reldir, err := filepath.Rel(basepath, filename)
+			w.comp.Env.Vars["__FILENAME__"] = filename
 
-		if err != nil {
-			cli.LogAndExit(fmt.Sprintf("Unable to relate directory %s to file %s", source, filename), cli.LogSeverityError)
-		}
-
-		if strings.Contains(reldir, ".mimic") {
-			filename = filepath.Join(target, reldir[:len(reldir)-len(".mimic")])
 			filedata = w.comp.Compile(lang.NewBuffer(filename, filedata))
 		} else {
-			filename = filepath.Join(target, reldir)
+			filename = filepath.Join(target, filename)
 		}
 
 		filename = w.comp.Compile(lang.NewBuffer("<filename>", filename))
 
-		dirname := filepath.Dir(filename)
-
-		cli.Log(fmt.Sprintf("Writing file %s...", filename), cli.LogSeverityInfo)
-
-		if err := os.MkdirAll(dirname, 0755); err != nil {
-			cli.LogAndExit(fmt.Sprintf("Unable to create directory %s", dirname), cli.LogSeverityError)
-		}
-
-		if err := os.WriteFile(filename, []byte(filedata), 0644); err != nil {
-			cli.LogAndExit(fmt.Sprintf("Unable to write file %s", filename), cli.LogSeverityError)
-		}
-
-		w.fileMap[filename] = filedata
+		w.write(filename, filedata)
 	}
 
 	return w.fileMap
