@@ -112,19 +112,26 @@ func main() {
 
 	expr := lang.NewExpression(*exprOpen, *exprClose)
 
-	generator := core.NewGenerator(source, target, env, expr)
+	comp := lang.NewCompiler(env, expr)
 
-	generator.Scan()
+	executor := core.NewExecutor(source, target, comp)
 
-	for _, name := range generator.GeneratedFiles {
-		cli.LogFileNameAt(name)
+	executor.Read()
+
+	for filename, _ := range executor.FilesRead {
+		cli.LogFileNameAt(filename)
 	}
 
 	if !cli.MustConfirmToContinue() {
 		os.Exit(0)
 	}
 
-	generator.Copy()
+	executor.Write()
+
+	for filename, filedata := range executor.WrittenFiles {
+		cli.LogFileNameAt(filename)
+		cli.LogFileDataAdded(filedata)
+	}
 
 	os.Exit(0)
 }

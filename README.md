@@ -28,12 +28,6 @@ Modifiers can be nested:
 {{ upper(kebab(something)) }}
 ```
 
-# Examples
-
-1. [Basic HTML example](./example/01_basic_html_usage/)
-2. [Basic React.js example](./example/02_basic_reactjs_usage/)
-3. [Basic Vue.js example](./example/03_basic_vuejs_usage/)
-
 ## Usage
 
 Basic usage:

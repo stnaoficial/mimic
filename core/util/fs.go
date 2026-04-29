@@ -3,7 +3,6 @@ package util
 import (
 	"io/fs"
 	"path/filepath"
-	"strings"
 )
 
 func DirectoryWalk(root string) ([]string, error) {
@@ -18,9 +17,7 @@ func DirectoryWalk(root string) ([]string, error) {
 			return nil
 		}
 
-		if strings.HasSuffix(path, ".mimic") {
-			filenames = append(filenames, path)
-		}
+		filenames = append(filenames, path)
 
 		return nil
 	})

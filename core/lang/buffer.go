@@ -13,10 +13,10 @@ type Buffer struct {
 	Column int
 }
 
-func NewBuffer(name string, data []byte) *Buffer {
+func NewBuffer(name string, data string) *Buffer {
 	return &Buffer{
 		Name:   name,
-		Data:   []rune(string(data)),
+		Data:   []rune(data),
 		Index:  0,
 		Line:   1,
 		Column: 1,
@@ -46,7 +46,7 @@ func (l *Buffer) Advance() rune {
 	return ch
 }
 
-func (f *Buffer) GetLineText() string {
+func (f *Buffer) lineText() string {
 	start := f.Index
 
 	for start > 0 && f.Data[start-1] != '\n' {
@@ -111,7 +111,7 @@ func (f *Buffer) buildCaretLine(line string) string {
 }
 
 func (f *Buffer) String() string {
-	lineText := f.GetLineText()
+	lineText := f.lineText()
 
 	return fmt.Sprintf(
 		"%s:%d:%d\n%s\n%s",
