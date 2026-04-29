@@ -17,9 +17,9 @@ release:
 	cp README.md "$(RELEASE_DIR)/windows-amd64"
 	cp README.md "$(RELEASE_DIR)/darwin-amd64"
 
-	tar -czf "$(RELEASE_DIR)/mimic-$(VERSION)-linux-amd64.tar.gz" -C "$(RELEASE_DIR)" linux-amd64
-	tar -czf "$(RELEASE_DIR)/mimic-$(VERSION)-windows-amd64.tar.gz" -C "$(RELEASE_DIR)" windows-amd64
-	tar -czf "$(RELEASE_DIR)/mimic-$(VERSION)-darwin-amd64.tar.gz" -C "$(RELEASE_DIR)" darwin-amd64
+	tar -czf "$(RELEASE_DIR)/mimic-linux-amd64.tar.gz" -C "$(RELEASE_DIR)" linux-amd64
+	tar -czf "$(RELEASE_DIR)/mimic-windows-amd64.tar.gz" -C "$(RELEASE_DIR)" windows-amd64
+	tar -czf "$(RELEASE_DIR)/mimic-darwin-amd64.tar.gz" -C "$(RELEASE_DIR)" darwin-amd64
 
 	rm -rf "$(RELEASE_DIR)/linux-amd64"
 	rm -rf "$(RELEASE_DIR)/windows-amd64"
