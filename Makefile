@@ -1,4 +1,4 @@
-VERSION := $(shell git branch --show-current)
+VERSION := $(patsubst release/%,%,$(shell git branch --show-current))
 RELEASE_DIR := ./releases/$(VERSION)
 
 build: main.go
