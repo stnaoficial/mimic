@@ -49,8 +49,8 @@ func variableFlag() util.FlagMap {
 }
 
 func expressionFlag() (*string, *string) {
-	exprOpen := flag.String("expr-open", "{{", exprOpenFlagUsage)
-	exprClose := flag.String("expr-close", "}}", exprCloseFlagUsage)
+	exprOpen := flag.String("expr-open", lang.DefaultOpenExpr, exprOpenFlagUsage)
+	exprClose := flag.String("expr-close", lang.DefaultCloseExpr, exprCloseFlagUsage)
 	return exprOpen, exprClose
 }
 
@@ -64,7 +64,7 @@ func printVersionAndExit() {
 	os.Exit(0)
 }
 
-func getSourceAndTarget() (string, string) {
+func sourceAndTarget() (string, string) {
 	args := flag.Args()
 
 	source := "./.mimic"
@@ -86,14 +86,6 @@ func getSourceAndTarget() (string, string) {
 	return source, target
 }
 
-func getEnvironment(vars util.FlagMap) *lang.Environment {
-	env := lang.NewEnvironment()
-
-	maps.Copy(env.Vars, vars)
-
-	return env
-}
-
 func main() {
 	flag.Usage = usage
 
@@ -107,7 +99,7 @@ func main() {
 		printVersionAndExit()
 	}
 
-	source, target := getSourceAndTarget()
+	source, target := sourceAndTarget()
 
 	env := lang.NewEnvironment()
 	maps.Copy(env.Vars, vars)

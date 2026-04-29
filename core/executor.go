@@ -1,10 +1,8 @@
 package core
 
 import (
-	"mimic/core/cli"
 	"mimic/core/lang"
 	"mimic/core/util"
-	"os"
 )
 
 type Executor struct {
@@ -37,12 +35,4 @@ func (e *Executor) Read() {
 
 func (e *Executor) Write() {
 	e.WrittenFiles = e.writer.Write(e.target, e.FilesRead)
-}
-
-func (e *Executor) Init() {
-	_, err := os.Getwd()
-
-	if err != nil {
-		cli.LogAndExit("Unable to get working directory", cli.LogSeverityError)
-	}
 }
