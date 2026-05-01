@@ -9,76 +9,66 @@ import (
 )
 
 type Reader struct {
-	basepath string
-	fileMap  util.FileMap
+	fileMap util.FileMap
 }
 
 func NewReader() *Reader {
 	return &Reader{
-		basepath: "",
-		fileMap:  make(util.FileMap),
+		fileMap: make(util.FileMap),
 	}
 }
 
-func (r *Reader) readDirectory(dirname string) {
-	cli.Log(fmt.Sprintf("Reading directory %s ...", dirname), cli.LogSeverityInfo)
+func (r *Reader) readDirectory(basePath string, dirName string) {
+	cli.Log(fmt.Sprintf("Reading directory %s ...", dirName), cli.LogSeverityInfo)
 
-	filenames, err := util.DirectoryWalk(dirname)
+	fileNames, err := util.DirectoryWalk(dirName)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to walk into directory %s", dirname), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to walk into directory %s", dirName), cli.LogSeverityError)
 	}
 
-	if len(filenames) == 0 {
-		cli.LogAndExit(fmt.Sprintf("No .mimic files found in directory %s", dirname), cli.LogSeverityWarn)
+	if len(fileNames) == 0 {
+		cli.LogAndExit(fmt.Sprintf("No .mimic files found in directory %s", dirName), cli.LogSeverityWarn)
 	}
 
-	for _, filename := range filenames {
-		r.readFile(filename)
+	for _, fileName := range fileNames {
+		r.readFile(basePath, fileName)
 	}
 }
 
-func (r *Reader) readFile(filename string) {
-	cli.Log(fmt.Sprintf("Reading file %s ...", filename), cli.LogSeverityInfo)
+func (r *Reader) readFile(basePath string, fileName string) {
+	cli.Log(fmt.Sprintf("Reading file %s ...", fileName), cli.LogSeverityInfo)
 
-	filedata, err := os.ReadFile(filename)
-
-	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to obtain data from file %s", filename), cli.LogSeverityError)
-	}
-
-	relpath, err := filepath.Rel(r.basepath, filename)
+	fileData, err := os.ReadFile(fileName)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to obtain relative path for file %s", filename), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain data from file %s", fileName), cli.LogSeverityError)
 	}
 
-	r.fileMap[relpath] = string(filedata)
+	relPath, err := filepath.Rel(basePath, fileName)
+
+	if err != nil {
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain relative path for file %s", fileName), cli.LogSeverityError)
+	}
+
+	r.fileMap[relPath] = string(fileData)
 }
 
-func (r *Reader) Read(sourcepath string) util.FileMap {
+func (r *Reader) Read(sourcePath string) util.FileMap {
 	for k := range r.fileMap {
 		delete(r.fileMap, k)
 	}
 
-	var basepath = sourcepath
-
-	pathinfo, err := os.Stat(sourcepath)
+	sourceInfo, err := os.Stat(sourcePath)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", sourcepath), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", sourcePath), cli.LogSeverityError)
 	}
 
-	if !pathinfo.IsDir() {
-		basepath = filepath.Dir(sourcepath)
-	}
-
-	r.basepath = basepath
-
-	if pathinfo.IsDir() {
-		r.readDirectory(sourcepath)
+	if sourceInfo.IsDir() {
+		r.readDirectory(sourcePath, sourcePath)
 	} else {
-		r.readFile(sourcepath)
+		r.readFile(filepath.Dir(sourcePath), sourcePath)
 	}
 
 	return r.fileMap

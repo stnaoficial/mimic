@@ -5,7 +5,7 @@ import (
 )
 
 type Compiler struct {
-	Env       *Environment
+	env       *Environment
 	evaluator *Evaluator
 	expr      *Expression
 }
@@ -14,7 +14,7 @@ func NewCompiler() *Compiler {
 	env := NewEnvironment()
 
 	return &Compiler{
-		Env:       env,
+		env:       env,
 		evaluator: NewEvaluator(env),
 		expr:      NewExpressionConfigurable(DefaultOpenExpr, DefaultCloseExpr),
 	}

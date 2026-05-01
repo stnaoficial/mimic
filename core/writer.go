@@ -24,40 +24,40 @@ func NewWriter(comp *lang.Compiler) *Writer {
 	}
 }
 
-func (w *Writer) write(filename string, filedata string) {
-	cli.Log(fmt.Sprintf("Writing file %s ...", filename), cli.LogSeverityInfo)
+func (w *Writer) writeFile(fileName string, fileData string) {
+	cli.Log(fmt.Sprintf("Writing file %s ...", fileName), cli.LogSeverityInfo)
 
-	dirname := filepath.Dir(filename)
+	dirName := filepath.Dir(fileName)
 
-	if err := os.MkdirAll(dirname, 0755); err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to create directory %s", dirname), cli.LogSeverityError)
+	if err := os.MkdirAll(dirName, 0755); err != nil {
+		cli.LogAndExit(fmt.Sprintf("Unable to create directory %s", dirName), cli.LogSeverityError)
 	}
 
-	if err := os.WriteFile(filename, []byte(filedata), 0644); err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to write file %s", filename), cli.LogSeverityError)
+	if err := os.WriteFile(fileName, []byte(fileData), 0644); err != nil {
+		cli.LogAndExit(fmt.Sprintf("Unable to write file %s", fileName), cli.LogSeverityError)
 	}
 
-	w.fileMap[filename] = filedata
+	w.fileMap[fileName] = fileData
 }
 
-func (w *Writer) Write(targetpath string, fileMap util.FileMap) util.FileMap {
+func (w *Writer) Write(targetPath string, fileMap util.FileMap) util.FileMap {
 	for k := range w.fileMap {
 		delete(w.fileMap, k)
 	}
 
-	cli.Log(fmt.Sprintf("Writing files to directory %s ...", targetpath), cli.LogSeverityInfo)
+	cli.Log(fmt.Sprintf("Writing files to directory %s ...", targetPath), cli.LogSeverityInfo)
 
-	for filename, filedata := range fileMap {
-		if strings.Contains(filename, ".mimic") {
-			filename = filepath.Join(targetpath, strings.TrimRight(filename, ".mimic"))
-			filedata = w.comp.Compile(lang.NewBuffer(filename, filedata))
+	for fileName, fileData := range fileMap {
+		if strings.Contains(fileName, ".mimic") {
+			fileName = filepath.Join(targetPath, strings.TrimRight(fileName, ".mimic"))
+			fileData = w.comp.Compile(lang.NewBuffer(fileName, fileData))
 		} else {
-			filename = filepath.Join(targetpath, filename)
+			fileName = filepath.Join(targetPath, fileName)
 		}
 
-		filename = w.comp.Compile(lang.NewBuffer("<filename>", filename))
+		fileName = w.comp.Compile(lang.NewBuffer("<fileName>", fileName))
 
-		w.write(filename, filedata)
+		w.writeFile(fileName, fileData)
 	}
 
 	return w.fileMap

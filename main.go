@@ -64,18 +64,18 @@ func printVersionAndExit() {
 	os.Exit(0)
 }
 
-func sourceAndTarget() (string, string) {
+func sourceAndtargetPath() (string, string) {
 	args := flag.Args()
 
-	source := "./.mimic"
-	target := "."
+	sourcePath := "./.mimic"
+	targetPath := "."
 
 	if len(args) >= 1 {
-		source = args[0]
+		sourcePath = args[0]
 	}
 
 	if len(args) >= 2 {
-		target = args[1]
+		targetPath = args[1]
 	}
 
 	if len(args) > 2 {
@@ -83,7 +83,7 @@ func sourceAndTarget() (string, string) {
 		os.Exit(1)
 	}
 
-	return source, target
+	return sourcePath, targetPath
 }
 
 func main() {
@@ -99,19 +99,19 @@ func main() {
 		printVersionAndExit()
 	}
 
-	source, target := sourceAndTarget()
+	sourcePath, targetPath := sourceAndtargetPath()
 
 	env := lang.NewEnvironment()
 	maps.Copy(env.Vars, vars)
 
 	comp := lang.NewCompilerConfigurable(env, lang.NewExpressionConfigurable(*exprOpen, *exprClose))
 
-	executor := core.NewExecutor(source, target, comp)
+	executor := core.NewExecutor(sourcePath, targetPath, comp)
 
 	executor.Read()
 
-	for filename, _ := range executor.FilesRead {
-		cli.LogFileNameAt(filename)
+	for fileName := range executor.FilesRead {
+		cli.LogFileNameAt(fileName)
 	}
 
 	if !cli.MustConfirmToContinue() {
@@ -120,9 +120,9 @@ func main() {
 
 	executor.Write()
 
-	for filename, filedata := range executor.WrittenFiles {
-		cli.LogFileNameAt(filename)
-		cli.LogFileDataAdded(filedata)
+	for fileName, fileData := range executor.WrittenFiles {
+		cli.LogFileNameAt(fileName)
+		cli.LogFileDataAdded(fileData)
 	}
 
 	os.Exit(0)

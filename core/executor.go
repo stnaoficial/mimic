@@ -12,11 +12,11 @@ type Executor struct {
 	writer       *Writer
 	WrittenFiles util.FileMap
 
-	source string
-	target string
+	sourcePath string
+	targetPath string
 }
 
-func NewExecutor(source string, target string, comp *lang.Compiler) *Executor {
+func NewExecutor(sourcePath string, targetPath string, comp *lang.Compiler) *Executor {
 	return &Executor{
 		reader:    NewReader(),
 		FilesRead: make(util.FileMap),
@@ -24,15 +24,15 @@ func NewExecutor(source string, target string, comp *lang.Compiler) *Executor {
 		writer:       NewWriter(comp),
 		WrittenFiles: make(util.FileMap),
 
-		source: source,
-		target: target,
+		sourcePath: sourcePath,
+		targetPath: targetPath,
 	}
 }
 
 func (e *Executor) Read() {
-	e.FilesRead = e.reader.Read(e.source)
+	e.FilesRead = e.reader.Read(e.sourcePath)
 }
 
 func (e *Executor) Write() {
-	e.WrittenFiles = e.writer.Write(e.target, e.FilesRead)
+	e.WrittenFiles = e.writer.Write(e.targetPath, e.FilesRead)
 }

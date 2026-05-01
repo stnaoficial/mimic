@@ -59,7 +59,7 @@ func ToPascal(s string) string {
 
 	var builder strings.Builder
 
-	for i := 0; i < len(tokens); i++ {
+	for i := range tokens {
 		builder.WriteString(ToSentence(tokens[i]))
 	}
 

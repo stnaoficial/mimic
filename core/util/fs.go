@@ -8,7 +8,7 @@ import (
 type FileMap = map[string]string
 
 func DirectoryWalk(root string) ([]string, error) {
-	filenames := []string{}
+	fileNames := []string{}
 
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -19,10 +19,10 @@ func DirectoryWalk(root string) ([]string, error) {
 			return nil
 		}
 
-		filenames = append(filenames, path)
+		fileNames = append(fileNames, path)
 
 		return nil
 	})
 
-	return filenames, err
+	return fileNames, err
 }

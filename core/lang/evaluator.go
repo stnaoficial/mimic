@@ -6,12 +6,12 @@ import (
 )
 
 type Evaluator struct {
-	Env *Environment
+	env *Environment
 }
 
 func NewEvaluator(env *Environment) *Evaluator {
 	return &Evaluator{
-		Env: env,
+		env: env,
 	}
 }
 
@@ -23,13 +23,13 @@ func (e *Evaluator) Eval(node Node) string {
 	switch n := node.(type) {
 
 	case Identifier:
-		if value, ok := e.Env.Vars[n.Name]; ok {
+		if value, ok := e.env.Vars[n.Name]; ok {
 			return value
 		}
 
 		value := cli.MustAsk(fmt.Sprintf("Please enter a value for \"%s\": ", n.Name))
 
-		e.Env.Vars[n.Name] = value
+		e.env.Vars[n.Name] = value
 
 		return value
 
@@ -37,7 +37,7 @@ func (e *Evaluator) Eval(node Node) string {
 		return n.Value
 
 	case CallExpression:
-		fn, ok := e.Env.Funcs[n.Name]
+		fn, ok := e.env.Funcs[n.Name]
 
 		if !ok {
 			e.abort(fmt.Sprintf("Unexpected function call \"%s\"", n.Name))
