@@ -5,7 +5,7 @@ import (
 	"mimic/core/cli"
 )
 
-type Node interface{}
+type Node any
 
 type Identifier struct {
 	Name string

@@ -1,0 +1,13 @@
+-- Migration version: 87506916
+
+-- UP
+CREATE TABLE IF NOT EXISTS products (
+    id UUID PRIMARY KEY,
+	name TEXT NOT NULL,
+	price INTEGER NOT NULL,
+	currency SMALLINT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- DOWN
+DROP TABLE IF EXISTS products;

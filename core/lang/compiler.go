@@ -5,7 +5,7 @@ import (
 )
 
 type Compiler struct {
-	env       *Environment
+	Env       *Environment
 	evaluator *Evaluator
 	expr      *Expression
 }
@@ -14,7 +14,7 @@ func NewCompiler() *Compiler {
 	env := NewEnvironment()
 
 	return &Compiler{
-		env:       env,
+		Env:       env,
 		evaluator: NewEvaluator(env),
 		expr:      NewExpressionConfigurable(DefaultOpenExpr, DefaultCloseExpr),
 	}
@@ -22,6 +22,7 @@ func NewCompiler() *Compiler {
 
 func NewCompilerConfigurable(env *Environment, expr *Expression) *Compiler {
 	return &Compiler{
+		Env:       env,
 		evaluator: NewEvaluator(env),
 		expr:      expr,
 	}
@@ -45,13 +46,7 @@ func (c *Compiler) Compile(buffer *Buffer) string {
 		}
 
 		if token.Type == TokenOpenExpr {
-			parser := NewParser(lexer)
-
-			ast := parser.Parse()
-
-			value := c.evaluator.Eval(ast)
-
-			result.WriteString(value)
+			result.WriteString(c.evaluator.Eval(NewParser(lexer).Parse()))
 		}
 	}
 

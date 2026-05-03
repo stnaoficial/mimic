@@ -1,0 +1,9 @@
+-- Migration version: {{ __8_DIGIT_INT__ }}
+
+-- UP
+CREATE TABLE IF NOT EXISTS {{snake(lower(table))}} (
+    {{ replace(fields, ", ", ",\n\t") }}
+);
+
+-- DOWN
+DROP TABLE IF EXISTS {{snake(lower(table))}};

@@ -22,6 +22,8 @@ const (
 	versionFlagUsage = "Print version information and exit"
 )
 
+var Version = "development"
+
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... SOURCE TARGET\n")
 	fmt.Fprintf(os.Stderr, "Mimic interpret .mimic files in the source path (./.mimic directory by default) and generate copies of them in the target path (the current directory by default).\n\n")
@@ -60,7 +62,7 @@ func parseFlags() {
 }
 
 func printVersionAndExit() {
-	fmt.Printf("Mimic version 1.0.0-beta\n")
+	fmt.Printf("Mimic version %s\n", Version)
 	os.Exit(0)
 }
 

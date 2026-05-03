@@ -1,0 +1,11 @@
+-- Migration version: 44437443
+
+-- UP
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY,
+	name TEXT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- DOWN
+DROP TABLE IF EXISTS users;

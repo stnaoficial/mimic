@@ -1,42 +1,13 @@
 package util
 
-const (
-	SingleQuote = "'"
-	DoubleQuote = "\""
-)
-
 func IsLetter(ch rune) bool {
-	if ch >= 'a' && ch <= 'z' {
-		return true
-	}
-
-	if ch >= 'A' && ch <= 'Z' {
-		return true
-	}
-
-	if ch == '_' {
-		return true
-	}
-
-	return false
-}
-
-func IsWhitespace(ch rune) bool {
-	if ch == ' ' {
-		return true
-	}
-
-	if ch == '\n' {
-		return true
-	}
-
-	if ch == '\t' {
-		return true
-	}
-
-	return false
+	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
 }
 
 func IsDigit(ch rune) bool {
 	return ch >= '0' && ch <= '9'
+}
+
+func IsWhitespace(ch rune) bool {
+	return ch == ' ' || ch == '\n' || ch == '\t'
 }

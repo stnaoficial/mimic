@@ -90,18 +90,6 @@ func (l *Lexer) match(str string) bool {
 	return true
 }
 
-func (l *Lexer) advanceOpenExpr() {
-	for range l.expr.Open {
-		l.buffer.Advance()
-	}
-}
-
-func (l *Lexer) advanceCloseExpr() {
-	for range l.expr.Close {
-		l.buffer.Advance()
-	}
-}
-
 func (l *Lexer) Next() Token {
 	// EOF
 	if l.buffer.Index >= len(l.buffer.Data) {
@@ -136,11 +124,14 @@ func (l *Lexer) readRaw() Token {
 			if l.buffer.Index > start {
 				return Token{
 					Type:  TokenRaw,
-					Value: string(l.buffer.Data[start:l.buffer.Index]),
+					Value: l.buffer.SliceFrom(start),
 				}
 			}
 
-			l.advanceOpenExpr()
+			for range l.expr.Open {
+				l.buffer.Advance()
+			}
+
 			l.mode = ModeExpr
 			l.exprFilled = false
 
@@ -155,7 +146,7 @@ func (l *Lexer) readRaw() Token {
 
 	return Token{
 		Type:  TokenRaw,
-		Value: string(l.buffer.Data[start:l.buffer.Index]),
+		Value: l.buffer.SliceFrom(start),
 	}
 }
 
@@ -173,7 +164,10 @@ func (l *Lexer) readExpr() Token {
 			l.abort("Illegal empty expression")
 		}
 
-		l.advanceCloseExpr()
+		for range l.expr.Close {
+			l.buffer.Advance()
+		}
+
 		l.mode = ModeRaw
 
 		return Token{
@@ -212,15 +206,22 @@ func (l *Lexer) readExpr() Token {
 	}
 
 	if ch == '"' || ch == '\'' {
+		start := l.buffer.Index
+
+		l.advanceString(ch)
+
 		l.exprFilled = true
+
 		return Token{
 			Type:  TokenString,
-			Value: l.readString(ch),
+			Value: l.buffer.SliceFrom(start),
 		}
 	}
 
-	if util.IsLetter(ch) {
+	if util.IsLetter(ch) || ch == '_' || ch == '$' {
 		start := l.buffer.Index
+
+		l.buffer.Advance()
 
 		for {
 			ch := l.buffer.Peek()
@@ -236,13 +237,12 @@ func (l *Lexer) readExpr() Token {
 
 		return Token{
 			Type:  TokenIdent,
-			Value: string(l.buffer.Data[start:l.buffer.Index]),
+			Value: l.buffer.SliceFrom(start),
 		}
 	}
 
 	if util.IsWhitespace(ch) {
 		l.buffer.Advance()
-
 		return l.Next()
 	}
 
@@ -252,11 +252,9 @@ func (l *Lexer) readExpr() Token {
 	return Token{}
 }
 
-func (l *Lexer) readString(quote rune) string {
+func (l *Lexer) advanceString(quote rune) {
 	// skip opening quote
 	l.buffer.Advance()
-
-	start := l.buffer.Index
 
 	for {
 		ch := l.buffer.Peek()
@@ -279,12 +277,8 @@ func (l *Lexer) readString(quote rune) string {
 		l.buffer.Advance()
 	}
 
-	value := string(l.buffer.Data[start:l.buffer.Index])
-
 	// skip closing quote
 	if l.buffer.Peek() == quote {
 		l.buffer.Advance()
 	}
-
-	return value
 }

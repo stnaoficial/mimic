@@ -3,6 +3,7 @@ package lang
 import (
 	"fmt"
 	"mimic/core/cli"
+	"mimic/core/util"
 )
 
 type Evaluator struct {
@@ -34,7 +35,7 @@ func (e *Evaluator) Eval(node Node) string {
 		return value
 
 	case StringLiteral:
-		return n.Value
+		return util.Unquote(n.Value)
 
 	case CallExpression:
 		fn, ok := e.env.Funcs[n.Name]

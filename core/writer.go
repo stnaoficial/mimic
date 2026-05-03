@@ -1,6 +1,7 @@
 package core
 
 import (
+	_ "embed"
 	"fmt"
 	"mimic/core/cli"
 	"mimic/core/lang"
@@ -48,6 +49,8 @@ func (w *Writer) Write(targetPath string, fileMap util.FileMap) util.FileMap {
 	cli.Log(fmt.Sprintf("Writing files to directory %s ...", targetPath), cli.LogSeverityInfo)
 
 	for fileName, fileData := range fileMap {
+		w.comp.Env.DefineScopeVars(fileName, fileData)
+
 		if strings.Contains(fileName, ".mimic") {
 			fileName = filepath.Join(targetPath, strings.TrimRight(fileName, ".mimic"))
 			fileData = w.comp.Compile(lang.NewBuffer(fileName, fileData))

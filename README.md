@@ -1,4 +1,8 @@
-# Mimic Templating Library
+<h1 align="center">
+   <img src="./public/icon.jpg" width="80px" height="80px" />
+   <br>
+   Mimic Templating Library
+</h1>
 
 ## Overview
 
@@ -91,7 +95,3 @@ mimic -v name=value -v "name=value" -v name="value" ...
 * Directory structure is preserved
 * Missing directories are created automatically
 * Unknown variables remain unchanged
-
-## Limitations
-
-* No conditionals or loops

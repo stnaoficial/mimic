@@ -23,12 +23,28 @@ func NewBuffer(name string, data string) *Buffer {
 	}
 }
 
-func (b *Buffer) Peek() rune {
-	if b.Index >= len(b.Data) {
+func (b *Buffer) SliceFrom(start int) string {
+	return string(b.Data[start:b.Index])
+}
+
+func (b *Buffer) SliceTo(end int) string {
+	return string(b.Data[b.Index:end])
+}
+
+func (b *Buffer) Slice(start int, end int) string {
+	return string(b.Data[start:end])
+}
+
+func (b *Buffer) At(index int) rune {
+	if index >= len(b.Data) {
 		return 0
 	}
 
-	return b.Data[b.Index]
+	return b.Data[index]
+}
+
+func (b *Buffer) Peek() rune {
+	return b.At(b.Index)
 }
 
 func (b *Buffer) Advance() rune {
