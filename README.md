@@ -6,7 +6,7 @@
 
 ## Overview
 
-Mimic interpret `.mimic` files in the source path (`./.mimic` directory by default) and generate copies of them in the target path (the current directory by default).
+Mimic interpret files and directories in the source path (`./.mimic` directory by default) and generate copies of them in the target path (the current directory by default).
 
 ## Variable Syntax
 
