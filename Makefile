@@ -10,15 +10,15 @@ release: main.go
 	mkdir -p "$(RELEASE_DIR)/darwin-amd64"
 
 	GOOS=linux GOARCH=amd64 go build \
-	-ldflags="$(-X main.Version=$(VERSION))" \
+	-ldflags="-X main.Version=$(VERSION)" \
 	-o "$(RELEASE_DIR)/linux-amd64/mimic" main.go
 
 	GOOS=windows GOARCH=amd64 go build \
-	-ldflags="$(-X main.Version=$(VERSION))" \
+	-ldflags="-X main.Version=$(VERSION)" \
 	-o "$(RELEASE_DIR)/windows-amd64/mimic.exe" main.go
 
 	GOOS=darwin GOARCH=amd64 go build \
-	-ldflags="$(-X main.Version=$(VERSION))" \
+	-ldflags="-X main.Version=$(VERSION)" \
 	-o "$(RELEASE_DIR)/darwin-amd64/mimic" main.go
 
 	cp README.md "$(RELEASE_DIR)/linux-amd64"
