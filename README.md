@@ -8,28 +8,29 @@
 
 Mimic interpret `.mimic` files in the source path (`./.mimic` directory by default) and generate copies of them in the target path (the current directory by default).
 
+## Variable Syntax
+
+
+```plaintext
+{{ var }}
+```
+
 Variables can be used in:
 
 * File contents
 * File names
 * Directory names
 
-## Variable Syntax
-
-```plaintext
-{{ something }}
-```
-
 Variables can be modified:
 
 ```plaintext
-{{ upper(something) }}
+{{ upper(var) }}
 ```
 
 Modifiers can be nested:
 
 ```plaintext
-{{ upper(kebab(something)) }}
+{{ upper(kebab(var)) }}
 ```
 
 ## Usage
@@ -95,3 +96,6 @@ mimic -v name=value -v "name=value" -v name="value" ...
 * Directory structure is preserved
 * Missing directories are created automatically
 * Unknown variables remain unchanged
+
+<br/>
+<img src="./public/banner.jpg" />

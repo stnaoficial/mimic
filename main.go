@@ -26,10 +26,10 @@ var Version = "development"
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... SOURCE TARGET\n")
-	fmt.Fprintf(os.Stderr, "Mimic interpret .mimic files in the source path (./.mimic directory by default) and generate copies of them in the target path (the current directory by default).\n\n")
+	fmt.Fprintf(os.Stderr, "Mimic interpret files and directories in the source path (./.mimic directory by default) and generate copies of them in the target path (the current directory by default).\n\n")
 	fmt.Fprintf(os.Stderr, "Provide variables directly\n")
 	fmt.Fprintf(os.Stderr, "  -v, --var       %s\n\n", varFlagUsage)
-	fmt.Fprintf(os.Stderr, "Configure how to start mimicking files in the source path\n")
+	fmt.Fprintf(os.Stderr, "Configure how to start mimicking\n")
 	fmt.Fprintf(os.Stderr, "  --expr-open     %s\n", exprOpenFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --expr-close    %s\n\n", exprCloseFlagUsage)
 	fmt.Fprintf(os.Stderr, "Get more information\n")
