@@ -21,10 +21,6 @@ release: main.go
 	-ldflags="-X main.Version=$(VERSION)" \
 	-o "$(RELEASE_DIR)/darwin-amd64/mimic" main.go
 
-	cp README.md "$(RELEASE_DIR)/linux-amd64"
-	cp README.md "$(RELEASE_DIR)/windows-amd64"
-	cp README.md "$(RELEASE_DIR)/darwin-amd64"
-
 	cp MANUAL.md "$(RELEASE_DIR)/linux-amd64"
 	cp MANUAL.md "$(RELEASE_DIR)/windows-amd64"
 	cp MANUAL.md "$(RELEASE_DIR)/darwin-amd64"
