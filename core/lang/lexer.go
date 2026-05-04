@@ -218,7 +218,7 @@ func (l *Lexer) readExpr() Token {
 		}
 	}
 
-	if util.IsLetter(ch) || ch == '_' || ch == '$' {
+	if util.IsLetter(ch) || ch == '_' {
 		start := l.buffer.Index
 
 		l.buffer.Advance()

@@ -26,9 +26,9 @@ func LogAndExit(cause string, severity LogSeverity) {
 	os.Exit(1)
 }
 
-func LogFileNameAt(name string) {
+func LogPathNameAt(pathName string) {
 	fmt.Print(ANSIColorCodeCyan)
-	fmt.Printf("@ %s\n", name)
+	fmt.Printf("@ %s\n", pathName)
 	fmt.Print(ANSIColorCodeReset)
 }
 

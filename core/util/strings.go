@@ -1,10 +1,22 @@
 package util
 
 import (
+	"fmt"
+	"math/rand/v2"
 	"strconv"
 	"strings"
 	"unicode"
 )
+
+func RandDigit(size int) string {
+	var max uint64 = 1
+
+	for range size {
+		max *= 10
+	}
+
+	return fmt.Sprintf("%0*d", size, rand.Uint64()%max)
+}
 
 func IsQuoted(s string) bool {
 	if len(s) < 2 {

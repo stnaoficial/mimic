@@ -1,4 +1,4 @@
--- Migration version: 87506916
+-- Migration version: 98521720
 
 -- UP
 CREATE TABLE IF NOT EXISTS products (

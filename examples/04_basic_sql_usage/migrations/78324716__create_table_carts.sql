@@ -1,4 +1,4 @@
--- Migration version: 69701285
+-- Migration version: 78324716
 
 -- UP
 CREATE TABLE IF NOT EXISTS carts (

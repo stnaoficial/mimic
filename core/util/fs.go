@@ -2,27 +2,33 @@ package util
 
 import (
 	"io/fs"
+	"os"
 	"path/filepath"
 )
 
-type FileMap = map[string]string
+type DirectoryEntry struct {
+	Path string
+	Info os.FileInfo
+}
 
-func DirectoryWalk(root string) ([]string, error) {
-	fileNames := []string{}
+func DirectoryWalk(root string) ([]DirectoryEntry, error) {
+	var entries []DirectoryEntry
 
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if d.IsDir() {
-			return nil
+		fileInfo, err := d.Info()
+
+		if err != nil {
+			return err
 		}
 
-		fileNames = append(fileNames, path)
+		entries = append(entries, DirectoryEntry{Path: path, Info: fileInfo})
 
 		return nil
 	})
 
-	return fileNames, err
+	return entries, err
 }

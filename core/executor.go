@@ -1,16 +1,13 @@
 package core
 
-import (
-	"mimic/core/lang"
-	"mimic/core/util"
-)
+import "mimic/core/lang"
 
 type Executor struct {
-	reader    *Reader
-	FilesRead util.FileMap
+	scanner   *Scanner
+	FilesRead EntryMap
 
 	writer       *Writer
-	WrittenFiles util.FileMap
+	WrittenFiles EntryMap
 
 	sourcePath string
 	targetPath string
@@ -18,19 +15,19 @@ type Executor struct {
 
 func NewExecutor(sourcePath string, targetPath string, comp *lang.Compiler) *Executor {
 	return &Executor{
-		reader:    NewReader(),
-		FilesRead: make(util.FileMap),
+		scanner:   NewScanner(),
+		FilesRead: make(EntryMap),
 
 		writer:       NewWriter(comp),
-		WrittenFiles: make(util.FileMap),
+		WrittenFiles: make(EntryMap),
 
 		sourcePath: sourcePath,
 		targetPath: targetPath,
 	}
 }
 
-func (e *Executor) Read() {
-	e.FilesRead = e.reader.Read(e.sourcePath)
+func (e *Executor) Scan() {
+	e.FilesRead = e.scanner.Scan(e.sourcePath)
 }
 
 func (e *Executor) Write() {

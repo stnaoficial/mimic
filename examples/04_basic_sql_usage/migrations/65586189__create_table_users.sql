@@ -1,4 +1,4 @@
--- Migration version: 44437443
+-- Migration version: 65586189
 
 -- UP
 CREATE TABLE IF NOT EXISTS users (

@@ -110,10 +110,10 @@ func main() {
 
 	executor := core.NewExecutor(sourcePath, targetPath, comp)
 
-	executor.Read()
+	executor.Scan()
 
-	for fileName := range executor.FilesRead {
-		cli.LogFileNameAt(fileName)
+	for pathName := range executor.FilesRead {
+		cli.LogPathNameAt(pathName)
 	}
 
 	if !cli.MustConfirmToContinue() {
@@ -122,9 +122,9 @@ func main() {
 
 	executor.Write()
 
-	for fileName, fileData := range executor.WrittenFiles {
-		cli.LogFileNameAt(fileName)
-		cli.LogFileDataAdded(fileData)
+	for pathName, node := range executor.WrittenFiles {
+		cli.LogPathNameAt(pathName)
+		cli.LogFileDataAdded(string(node.Data))
 	}
 
 	os.Exit(0)
