@@ -10,6 +10,7 @@ const (
 type Entry struct {
 	Name string
 	Type EntryType
+	Size int
 	Data []byte
 }
 
@@ -19,6 +20,7 @@ func NewFileEntry(name string, data []byte) Entry {
 	return Entry{
 		Name: name,
 		Type: EntryTypeFile,
+		Size: len(data),
 		Data: data,
 	}
 }
@@ -27,6 +29,7 @@ func NewDirectoryEntry(name string) Entry {
 	return Entry{
 		Name: name,
 		Type: EntryTypeDirectory,
+		Size: 0,
 		Data: nil,
 	}
 }

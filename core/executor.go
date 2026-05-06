@@ -1,35 +1,37 @@
 package core
 
-import "mimic/core/lang"
-
 type Executor struct {
 	scanner   *Scanner
-	FilesRead EntryMap
+	filesRead EntryMap
+
+	generator      *Generator
+	filesGenerated EntryMap
 
 	writer       *Writer
-	WrittenFiles EntryMap
-
-	sourcePath string
-	targetPath string
+	writtenFiles EntryMap
 }
 
-func NewExecutor(sourcePath string, targetPath string, comp *lang.Compiler) *Executor {
+func NewExecutor(config *Config) *Executor {
 	return &Executor{
-		scanner:   NewScanner(),
-		FilesRead: make(EntryMap),
+		scanner:   NewScanner(config),
+		filesRead: make(EntryMap),
 
-		writer:       NewWriter(comp),
-		WrittenFiles: make(EntryMap),
+		generator:      NewGenerator(config),
+		filesGenerated: make(EntryMap),
 
-		sourcePath: sourcePath,
-		targetPath: targetPath,
+		writer:       NewWriter(config),
+		writtenFiles: make(EntryMap),
 	}
 }
 
 func (e *Executor) Scan() {
-	e.FilesRead = e.scanner.Scan(e.sourcePath)
+	e.filesRead = e.scanner.Scan()
+}
+
+func (e *Executor) Generate() {
+	e.filesGenerated = e.generator.Generate(e.filesRead)
 }
 
 func (e *Executor) Write() {
-	e.WrittenFiles = e.writer.Write(e.targetPath, e.FilesRead)
+	e.writtenFiles = e.writer.Write(e.filesGenerated)
 }

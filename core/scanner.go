@@ -9,30 +9,44 @@ import (
 )
 
 type Scanner struct {
+	config *Config
+
 	entryMap EntryMap
 }
 
-func NewScanner() *Scanner {
+func NewScanner(config *Config) *Scanner {
 	return &Scanner{
+		config: config,
+
 		entryMap: make(EntryMap),
 	}
 }
 
-func (s *Scanner) Scan(sourcePath string) EntryMap {
-	cli.Log(fmt.Sprintf("Scanning source path %s ...", sourcePath), cli.LogSeverityInfo)
+func (s *Scanner) Scan() EntryMap {
+	if s.config.DebugMode {
+		cli.LogWithPrefix(fmt.Sprintf("Scanning source path %s ...", s.config.SourcePath), cli.LogSeverityInfo)
+	}
 
 	s.entryMap = make(EntryMap)
 
-	sourceInfo, err := os.Stat(sourcePath)
+	sourceInfo, err := os.Stat(s.config.SourcePath)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", sourcePath), cli.LogSeverityError)
+		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", s.config.SourcePath), cli.LogSeverityError)
 	}
 
 	if sourceInfo.IsDir() {
-		s.scanSourceDirectory(sourcePath, sourcePath)
+		s.scanSourceDirectory(s.config.SourcePath, s.config.SourcePath)
 	} else {
-		s.scanSourceFile(filepath.Dir(sourcePath), sourcePath, sourceInfo)
+		s.scanSourceFile(filepath.Dir(s.config.SourcePath), s.config.SourcePath, sourceInfo)
+	}
+
+	for pathName, entry := range s.entryMap {
+		if s.config.DebugMode {
+			cli.LogWithPrefix(fmt.Sprintf("Scanned about %d bytes from %s", entry.Size, pathName), cli.LogSeverityWarn)
+		}
+
+		cli.Log(fmt.Sprintf("~ %s", pathName), cli.LogSeverityWarn)
 	}
 
 	return s.entryMap
@@ -77,13 +91,17 @@ func (s *Scanner) scanEntry(basePath string, entry util.DirectoryEntry) {
 }
 
 func (s *Scanner) scanDirectoryEntry(relPath string) {
-	cli.Log(fmt.Sprintf("Scanning directory %s ...", relPath), cli.LogSeverityInfo)
+	if s.config.DebugMode {
+		cli.LogWithPrefix(fmt.Sprintf("Scanning directory %s ...", relPath), cli.LogSeverityInfo)
+	}
 
 	s.entryMap[relPath] = NewDirectoryEntry(relPath)
 }
 
 func (s *Scanner) scanFileEntry(relPath string, fileName string) {
-	cli.Log(fmt.Sprintf("Scanning file %s ...", relPath), cli.LogSeverityInfo)
+	if s.config.DebugMode {
+		cli.LogWithPrefix(fmt.Sprintf("Scanning file %s ...", relPath), cli.LogSeverityInfo)
+	}
 
 	fileData, err := os.ReadFile(fileName)
 

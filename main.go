@@ -4,25 +4,24 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"maps"
 	"mimic/core"
 	"mimic/core/cli"
 	"mimic/core/lang"
-	"mimic/core/util"
 	"os"
 )
+
+var Version = "development"
 
 const (
 	varFlagUsage = "Set a variable directly by passing a key=value pair"
 
 	exprOpenFlagUsage  = "Set the open expression syntax (default \"{{\")"
 	exprCloseFlagUsage = "Set the close expression syntax (default \"}}\")"
+	debugModeFlagUsage = "Enable debug mode (default false)"
 
-	helpFlagUsage    = "Print Help (this message) and exit"
-	versionFlagUsage = "Print version information and exit"
+	helpFlagUsage         = "Print Help (this message) and exit"
+	printVersionFlagUsage = "Print version information and exit"
 )
-
-var Version = "development"
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... SOURCE TARGET\n")
@@ -31,101 +30,43 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "  -v, --var       %s\n\n", varFlagUsage)
 	fmt.Fprintf(os.Stderr, "Configure how to start mimicking\n")
 	fmt.Fprintf(os.Stderr, "  --expr-open     %s\n", exprOpenFlagUsage)
-	fmt.Fprintf(os.Stderr, "  --expr-close    %s\n\n", exprCloseFlagUsage)
+	fmt.Fprintf(os.Stderr, "  --expr-close    %s\n", exprCloseFlagUsage)
+	fmt.Fprintf(os.Stderr, "  --debug     	  %s\n\n", debugModeFlagUsage)
 	fmt.Fprintf(os.Stderr, "Get more information\n")
 	fmt.Fprintf(os.Stderr, "  -h, --help      %s\n", helpFlagUsage)
-	fmt.Fprintf(os.Stderr, "  --version       %s\n\n", versionFlagUsage)
-}
-
-func versionFlag() *bool {
-	return flag.Bool("version", false, versionFlagUsage)
-}
-
-func variableFlag() util.FlagMap {
-	vars := make(util.FlagMap)
-
-	flag.Var(&vars, "v", varFlagUsage)
-	flag.Var(&vars, "var", varFlagUsage)
-
-	return vars
-}
-
-func expressionFlag() (*string, *string) {
-	exprOpen := flag.String("expr-open", lang.DefaultOpenExpr, exprOpenFlagUsage)
-	exprClose := flag.String("expr-close", lang.DefaultCloseExpr, exprCloseFlagUsage)
-	return exprOpen, exprClose
-}
-
-func parseFlags() {
-	flag.CommandLine.SetOutput(io.Discard)
-	flag.Parse()
-}
-
-func printVersionAndExit() {
-	fmt.Printf("Mimic version %s\n", Version)
-	os.Exit(0)
-}
-
-func sourceAndtargetPath() (string, string) {
-	args := flag.Args()
-
-	sourcePath := "./.mimic"
-	targetPath := "."
-
-	if len(args) >= 1 {
-		sourcePath = args[0]
-	}
-
-	if len(args) >= 2 {
-		targetPath = args[1]
-	}
-
-	if len(args) > 2 {
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	return sourcePath, targetPath
+	fmt.Fprintf(os.Stderr, "  --version       %s\n\n", printVersionFlagUsage)
 }
 
 func main() {
+	config := core.NewConfig(Version)
+
 	flag.Usage = usage
 
-	version := versionFlag()
-	vars := variableFlag()
-	exprOpen, exprClose := expressionFlag()
+	flag.Var(&config.Variables, "v", varFlagUsage)
+	flag.Var(&config.Variables, "var", varFlagUsage)
 
-	parseFlags()
+	flag.StringVar(&config.ExprOpen, "expr-open", lang.DefaultOpenExpr, exprOpenFlagUsage)
+	flag.StringVar(&config.ExprClose, "expr-close", lang.DefaultCloseExpr, exprCloseFlagUsage)
 
-	if *version {
-		printVersionAndExit()
-	}
+	flag.BoolVar(&config.DebugMode, "debug", false, debugModeFlagUsage)
 
-	sourcePath, targetPath := sourceAndtargetPath()
+	flag.BoolVar(&config.PrintVersion, "version", false, printVersionFlagUsage)
 
-	env := lang.NewEnvironment()
-	maps.Copy(env.Vars, vars)
+	flag.CommandLine.SetOutput(io.Discard)
 
-	comp := lang.NewCompilerConfigurable(env, lang.NewExpressionConfigurable(*exprOpen, *exprClose))
+	flag.Parse()
+	config.Parse()
 
-	executor := core.NewExecutor(sourcePath, targetPath, comp)
+	executor := core.NewExecutor(config)
 
 	executor.Scan()
-
-	for pathName := range executor.FilesRead {
-		cli.LogPathNameAt(pathName)
-	}
+	executor.Generate()
 
 	if !cli.MustConfirmToContinue() {
 		os.Exit(0)
 	}
 
 	executor.Write()
-
-	for pathName, node := range executor.WrittenFiles {
-		cli.LogPathNameAt(pathName)
-		cli.LogFileDataAdded(string(node.Data))
-	}
 
 	os.Exit(0)
 }

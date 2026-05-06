@@ -48,7 +48,7 @@ func Capitalize(s string) string {
 		return ""
 	}
 
-	runes := []rune(s)
+	runes := []rune(strings.ToLower(s))
 
 	runes[0] = unicode.ToUpper(runes[0])
 
@@ -56,21 +56,25 @@ func Capitalize(s string) string {
 }
 
 func Proper(s string) string {
-	tokens := strings.Fields(s)
+	tokens := strings.Fields(strings.ToLower(s))
 
 	if len(tokens) == 0 {
 		return ""
 	}
 
 	for i := range tokens {
-		tokens[i] = Capitalize(tokens[i])
+		runes := []rune(tokens[i])
+
+		runes[0] = unicode.ToUpper(runes[0])
+
+		tokens[i] = string(runes)
 	}
 
 	return strings.Join(tokens, " ")
 }
 
 func ToCamel(s string) string {
-	tokens := strings.Fields(s)
+	tokens := strings.Fields(strings.ToLower(s))
 
 	if len(tokens) == 0 {
 		return ""
@@ -81,14 +85,18 @@ func ToCamel(s string) string {
 	builder.WriteString(tokens[0])
 
 	for i := 1; i < len(tokens); i++ {
-		builder.WriteString(Capitalize(tokens[i]))
+		runes := []rune(tokens[i])
+
+		runes[0] = unicode.ToUpper(runes[0])
+
+		builder.WriteString(string(runes))
 	}
 
 	return builder.String()
 }
 
 func ToPascal(s string) string {
-	tokens := strings.Fields(s)
+	tokens := strings.Fields(strings.ToLower(s))
 
 	if len(tokens) == 0 {
 		return ""
@@ -97,7 +105,11 @@ func ToPascal(s string) string {
 	var builder strings.Builder
 
 	for i := range tokens {
-		builder.WriteString(Capitalize(tokens[i]))
+		runes := []rune(tokens[i])
+
+		runes[0] = unicode.ToUpper(runes[0])
+
+		builder.WriteString(string(runes))
 	}
 
 	return builder.String()

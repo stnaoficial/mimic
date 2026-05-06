@@ -1,13 +1,5 @@
 package cli
 
-type LogSeverity int
-
-const (
-	LogSeverityInfo  LogSeverity = 0
-	LogSeverityWarn  LogSeverity = 1
-	LogSeverityError LogSeverity = 2
-)
-
 type ANSIColorCode string
 
 const (
