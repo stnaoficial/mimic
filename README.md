@@ -24,6 +24,7 @@ $ mimic ./.mimic . # Specifing the source and target path
 | `-v` | `--var` | Set a var directly by passing as a `key=value` pair | |
 | | `--expr-open` | Set the open expression syntax | `{{` |
 | | `--expr-close` | Set the close expression syntax | `}}` |
+| | `--debug` | Enable debug mode | false |
 | `-h` | `--help` | Print Help (this message) and exit
 | | `--version` | Print version information and exit
 
