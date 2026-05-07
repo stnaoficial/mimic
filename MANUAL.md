@@ -20,7 +20,7 @@
     - [`__NANOSECOND__`](#__nanosecond__)
 
   - [Local Variables](#local-variables)
-    - [`__UID__`](#__uid__)
+    - [`__UUID__`](#__uuid__)
     - [`__16_DIGIT__`](#__16_digit__)
     - [`__8_DIGIT__`](#__8_digit__)
     - [`__4_DIGIT__`](#__4_digit__)
@@ -31,10 +31,10 @@
     - [`__FILENAME__`](#__filename__)
     - [`__FILEDATA__`](#__filedata__)
 
-- [Transform Functions](#transform-functions)
-  - [Modifiers](#modifiers)
-  - [Cases](#cases)
-  - [Utilities](#utilities)
+- [Functions](#functions)
+  - [Case formatters](#case-formatters)
+  - [Case separators](#case-separators)
+  - [Miscellaneous](#miscellaneous)
 
 ## Variables
 
@@ -74,7 +74,7 @@ Variables can be used in:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| [`__UID__`](#__uid__) | Unique identifier for the current entry. | `550e8400-e29b-41d4-a716-446655440000` |
+| [`__UUID__`](#__uuid__) | Unique identifier for the current entry. | `550e8400-e29b-41d4-a716-446655440000` |
 | [`__16_DIGIT__`](#__16_digit__) | Random 16-digit number. | `4839201748291038` |
 | [`__8_DIGIT__`](#__8_digit__) | Random 8-digit number. | `04829173` |
 | [`__4_DIGIT__`](#__4_digit__) | Random 4-digit number. | `0037` |
@@ -85,32 +85,34 @@ Variables can be used in:
 | [`__FILENAME__`](#__filename__) | Full pathname of the current file entry. Available only for files. | `parent/child/file.ext` |
 | [`__FILEDATA__`](#__filedata__) | Raw file contents. Available only for files. | `!"#$%&'()*+,-./:;<=>?@[]^_`{|}~` |
 
-## Transform Functions
+## Functions
 
-Transform functions may be used in expressions like `{{ upper(name) }}` or `{{ lower(replace(name, " ", "-")) }}`.
+Functions may be used in expressions like `{{ upper(name) }}` or `{{ lower(replace(name, " ", "-")) }}`.
 
-### Modifiers
+### Case formatters
 
-| Modifier | Description | Example |
-|----------|-------------|---------|
-| `capitalize` | Capitalize the first character of the value. | `{{ capitalize(name) }}` |
-| `proper` | Capitalize the first character of each word. | `{{ proper(name) }}` |
-| `lower` | Convert the value to lowercase. | `{{ lower(name) }}` |
-| `upper` | Convert the value to uppercase. | `{{ upper(name) }}` |
+| Name | Description | Example | Diacritics |
+|-|-|-|-|
+| `upper` | Convert a value to UPPERCASE. | `{{ upper(name) }}` | Yes |
+| `lower` | Convert a value to lowercase. | `{{ lower(name) }}` | Yes |
+| `proper` | Capitalize the first character of each word in a value. | `{{ proper(name) }}` | Yes |
+| `title` | Capitalize the first character of each word except for articles, short prepositions and conjunctions. | `{{ title(name) }}` | Yes |
+| `capitalize` | Capitalize the first character of a value. | `{{ capitalize(name) }}` | Yes |
+| `pascal` | Convert a value to PascalCase. | `{{ pascal(name) }}` | No |
+| `camel` | Convert a value to camelCase. | `{{ camel(name) }}` | No |
+| `flat` | Convert to a value flatcase (no separators). | `{{ flat(name) }}` | No |
 
-### Cases
+### Case separators
 
-| Case | Description | Example |
-|------|-------------|---------|
-| `camel` | Convert to camelCase. | `{{ camel(name) }}` |
-| `pascal` | Convert to PascalCase. | `{{ pascal(name) }}` |
-| `snake` | Convert to snake_case. | `{{ snake(name) }}` |
-| `kebab` | Convert to kebab-case. | `{{ kebab(name) }}` |
-| `dot` | Convert to dot.case. | `{{ dot(name) }}` |
-| `flat` | Convert to flatcase (no separators). | `{{ flat(name) }}` |
+| Name | Description | Example | Diacritics |
+|-|-|-|-|
+| `kebab` | Convert a value to kebab-case. | `{{ kebab(name) }}` | No |
+| `snake` | Convert a value to snake_case. | `{{ snake(name) }}` | No |
 
-### Utilities
+### Miscellaneous
 
-| Utility | Description | Example |
-|---------|-------------|---------|
-| `replace` | Replace all occurrences of a substring. Requires three arguments: value, old and new. | `{{ replace(name, " ", "-") }}` |
+| Name | Description | Example |
+|-|-|-|
+| `replace` | Replaces all occurrences of a value with another. Requires three arguments: value, old and new. | `{{ replace(name, " ", "-") }}` |
+| `normalize` | Removing diacritics of a value. | `{{ normalize(name) }}` |
+| `join` | Join a value by a given space separator. | `{{ join(name, "~") }}` |

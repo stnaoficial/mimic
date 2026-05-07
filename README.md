@@ -20,8 +20,9 @@ $ mimic ./.mimic . # Specifing the source and target path
 ## Flags
 
 | Flag | Long Flag | Description | Default |
-| :--- | :--- | :--- | :--- |
+|-|-|-|-|
 | `-v` | `--var` | Set a var directly by passing as a `key=value` pair | |
+| `-p` | `--prompt` | Set a a variable prompt message by passing a `key=value` pair | |
 | | `--expr-open` | Set the open expression syntax | `{{` |
 | | `--expr-close` | Set the close expression syntax | `}}` |
 | | `--debug` | Enable debug mode | false |

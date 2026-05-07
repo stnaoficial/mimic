@@ -1,9 +1,6 @@
 package lang
 
-import (
-	"fmt"
-	"mimic/core/cli"
-)
+import "fmt"
 
 type Node any
 
@@ -35,25 +32,21 @@ func NewParser(lexer *Lexer) *Parser {
 	return p
 }
 
-func (p *Parser) abort(cause string) {
-	cli.LogAndExit(fmt.Sprintf("%s\n%s", cause, p.lexer.buffer), cli.LogSeverityError)
-}
+func (p *Parser) Parse() (Node, error) {
+	node, err := p.parseExpression()
 
-func (p *Parser) next() {
-	p.curr = p.lexer.Next()
-}
-
-func (p *Parser) Parse() Node {
-	node := p.parseExpression()
-
-	if p.curr.Type != TokenEOF && p.curr.Type != TokenCloseExpr {
-		p.abort("Invalid token")
+	if err != nil {
+		return nil, err
 	}
 
-	return node
+	if p.curr.Type != TokenEOF && p.curr.Type != TokenCloseExpr {
+		return nil, p.error("Invalid token")
+	}
+
+	return node, nil
 }
 
-func (p *Parser) parseExpression() Node {
+func (p *Parser) parseExpression() (Node, error) {
 	if p.curr.Type == TokenIdent {
 		return p.parseIdentifierOrCall()
 	}
@@ -61,69 +54,77 @@ func (p *Parser) parseExpression() Node {
 	if p.curr.Type == TokenString {
 		value := p.curr.Value
 
-		p.next()
-
-		return StringLiteral{
-			Value: value,
+		if err := p.next(); err != nil {
+			return nil, err
 		}
+
+		return StringLiteral{Value: value}, nil
 	}
 
-	p.abort("Invalid expression")
-
-	// unreachable
-	return nil
+	return nil, p.error("Invalid expression")
 }
 
-func (p *Parser) parseIdentifierOrCall() Node {
+func (p *Parser) parseIdentifierOrCall() (Node, error) {
 	name := p.curr.Value
 
-	p.next()
+	if err := p.next(); err != nil {
+		return nil, err
+	}
 
 	// function call
 	if p.curr.Type == TokenOpenParen {
-		p.next()
+		if err := p.next(); err != nil {
+			return nil, err
+		}
 
-		args := p.parseArguments()
+		args, err := p.parseArguments()
+
+		if err != nil {
+			return nil, err
+		}
 
 		if p.curr.Type != TokenCloseParen {
-			p.abort("Invalid call signature")
+			return nil, p.error("Invalid call signature")
 		}
 
-		p.next()
-
-		return CallExpression{
-			Name: name,
-			Args: args,
+		if err := p.next(); err != nil {
+			return nil, err
 		}
+
+		return CallExpression{Name: name, Args: args}, nil
 	}
 
 	// plain identifier
-	return Identifier{
-		Name: name,
-	}
+	return Identifier{Name: name}, nil
 }
 
-func (p *Parser) parseArguments() []Node {
+func (p *Parser) parseArguments() ([]Node, error) {
 	var args []Node
 
 	if p.curr.Type == TokenCloseParen {
-		return args
+		return args, nil
 	}
 
 	for {
-		arg := p.parseExpression()
+		arg, err := p.parseExpression()
+
+		if err != nil {
+			return nil, err
+		}
 
 		if arg == nil {
-			p.abort("Invalid argument")
+			return nil, p.error("Invalid argument")
 		}
 
 		args = append(args, arg)
 
 		if p.curr.Type == TokenComma {
-			p.next()
+			if err := p.next(); err != nil {
+				return nil, err
+			}
 
 			if p.curr.Type == TokenCloseParen {
-				p.abort("Invalid trailing comma")
+				return nil, p.error("Invalid trailing comma")
 			}
 
 			continue
@@ -132,5 +133,21 @@ func (p *Parser) parseArguments() []Node {
 		break
 	}
 
-	return args
+	return args, nil
+}
+
+func (p *Parser) next() error {
+	token, err := p.lexer.Next()
+
+	if err != nil {
+		return err
+	}
+
+	p.curr = token
+
+	return nil
+}
+
+func (p *Parser) error(cause string) error {
+	return fmt.Errorf("%s\n%s", cause, p.lexer.buffer)
 }

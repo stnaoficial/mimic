@@ -12,6 +12,7 @@ type Config struct {
 	TargetPath string
 
 	Variables util.FlagMap
+	Prompts   util.FlagMap
 
 	ExprOpen  string
 	ExprClose string
@@ -28,6 +29,7 @@ func NewConfig(version string) *Config {
 		TargetPath: ".",
 
 		Variables: make(util.FlagMap),
+		Prompts:   make(util.FlagMap),
 
 		ExprOpen:  "{{",
 		ExprClose: "}}",

@@ -28,13 +28,17 @@ func NewCompilerConfigurable(env *Environment, expr *Expression) *Compiler {
 	}
 }
 
-func (c *Compiler) Compile(buffer *Buffer) string {
+func (c *Compiler) Compile(buffer *Buffer) (string, error) {
 	lexer := NewLexer(buffer, c.expr)
 
 	var result strings.Builder
 
 	for {
-		token := lexer.Next()
+		token, err := lexer.Next()
+
+		if err != nil {
+			return "", err
+		}
 
 		if token.Type == TokenEOF {
 			break
@@ -46,9 +50,21 @@ func (c *Compiler) Compile(buffer *Buffer) string {
 		}
 
 		if token.Type == TokenOpenExpr {
-			result.WriteString(c.evaluator.Eval(NewParser(lexer).Parse()))
+			node, err := NewParser(lexer).Parse()
+
+			if err != nil {
+				return "", err
+			}
+
+			value, err := c.evaluator.Eval(node)
+
+			if err != nil {
+				return "", err
+			}
+
+			result.WriteString(value)
 		}
 	}
 
-	return result.String()
+	return result.String(), nil
 }

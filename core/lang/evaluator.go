@@ -3,7 +3,7 @@ package lang
 import (
 	"fmt"
 	"mimic/core/cli"
-	"mimic/core/util"
+	"strconv"
 )
 
 type Evaluator struct {
@@ -16,42 +16,48 @@ func NewEvaluator(env *Environment) *Evaluator {
 	}
 }
 
-func (e *Evaluator) abort(cause string) {
-	cli.LogAndExit(cause, cli.LogSeverityError)
-}
-
-func (e *Evaluator) Eval(node Node) string {
+func (e *Evaluator) Eval(node Node) (string, error) {
 	switch n := node.(type) {
 
 	case Identifier:
 		if value, ok := e.env.Vars[n.Name]; ok {
-			return value
+			return value, nil
 		}
 
-		value := cli.MustAsk(fmt.Sprintf("Please enter a value for \"%s\": ", n.Name))
+		prompt, ok := e.env.Prompts[n.Name]
+
+		if !ok {
+			prompt = fmt.Sprintf("Please enter a value for \"%s\": ", n.Name)
+		}
+
+		value := cli.MustAsk(prompt)
 
 		e.env.Vars[n.Name] = value
 
-		return value
+		return value, nil
 
 	case StringLiteral:
-		return util.Unquote(n.Value)
+		return strconv.Unquote(n.Value)
 
 	case CallExpression:
 		fn, ok := e.env.Funcs[n.Name]
 
 		if !ok {
-			e.abort(fmt.Sprintf("Unexpected function call \"%s\"", n.Name))
+			return "", fmt.Errorf("Undefined function \"%s\"", n.Name)
 		}
 
 		var args []string
 
 		for _, arg := range n.Args {
-			args = append(args, e.Eval(arg))
+			if result, err := e.Eval(arg); err == nil {
+				args = append(args, result)
+			} else {
+				return "", err
+			}
 		}
 
-		return fn(args)
+		return fn(args), nil
 	}
 
-	return ""
+	return "", nil
 }

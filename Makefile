@@ -1,3 +1,5 @@
+.SILENT:
+
 VERSION := $(shell git tag --sort=-version:refname | head -n 1)
 RELEASE_DIR := ./releases/$(VERSION)
 

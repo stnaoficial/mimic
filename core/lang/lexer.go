@@ -1,10 +1,6 @@
 package lang
 
-import (
-	"fmt"
-	"mimic/core/cli"
-	"mimic/core/util"
-)
+import "fmt"
 
 type TokenType int
 type ModeType int
@@ -72,30 +68,10 @@ func NewLexer(buffer *Buffer, expr *Expression) *Lexer {
 	}
 }
 
-func (l *Lexer) abort(cause string) {
-	cli.LogAndExit(fmt.Sprintf("%s\n%s", cause, l.buffer), cli.LogSeverityError)
-}
-
-func (l *Lexer) match(str string) bool {
-	if l.buffer.Index+len(str) > len(l.buffer.Data) {
-		return false
-	}
-
-	for i, r := range str {
-		if l.buffer.Data[l.buffer.Index+i] != r {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (l *Lexer) Next() Token {
+func (l *Lexer) Next() (Token, error) {
 	// EOF
 	if l.buffer.Index >= len(l.buffer.Data) {
-		return Token{
-			Type: TokenEOF,
-		}
+		return Token{Type: TokenEOF}, nil
 	}
 
 	if l.mode == ModeRaw {
@@ -107,12 +83,10 @@ func (l *Lexer) Next() Token {
 	}
 
 	// EOF
-	return Token{
-		Type: TokenEOF,
-	}
+	return Token{Type: TokenEOF}, nil
 }
 
-func (l *Lexer) readRaw() Token {
+func (l *Lexer) readRaw() (Token, error) {
 	start := l.buffer.Index
 
 	for {
@@ -122,10 +96,7 @@ func (l *Lexer) readRaw() Token {
 
 		if l.match(l.expr.Open) {
 			if l.buffer.Index > start {
-				return Token{
-					Type:  TokenRaw,
-					Value: l.buffer.SliceFrom(start),
-				}
+				return Token{Type: TokenRaw, Value: l.buffer.SliceFrom(start)}, nil
 			}
 
 			for range l.expr.Open {
@@ -135,33 +106,27 @@ func (l *Lexer) readRaw() Token {
 			l.mode = ModeExpr
 			l.exprFilled = false
 
-			return Token{
-				Type:  TokenOpenExpr,
-				Value: l.expr.Open,
-			}
+			return Token{Type: TokenOpenExpr, Value: l.expr.Open}, nil
 		}
 
 		l.buffer.Advance()
 	}
 
-	return Token{
-		Type:  TokenRaw,
-		Value: l.buffer.SliceFrom(start),
-	}
+	return Token{Type: TokenRaw, Value: l.buffer.SliceFrom(start)}, nil
 }
 
-func (l *Lexer) readExpr() Token {
+func (l *Lexer) readExpr() (Token, error) {
 	if l.buffer.Peek() == 0 {
-		l.abort("Illegal unterminated expression")
+		return Token{}, l.error("Illegal unterminated expression")
 	}
 
 	if l.match(l.expr.Open) {
-		l.abort("Illegal nested expression")
+		return Token{}, l.error("Illegal nested expression")
 	}
 
 	if l.match(l.expr.Close) {
 		if !l.exprFilled {
-			l.abort("Illegal empty expression")
+			return Token{}, l.error("Illegal empty expression")
 		}
 
 		for range l.expr.Close {
@@ -170,10 +135,7 @@ func (l *Lexer) readExpr() Token {
 
 		l.mode = ModeRaw
 
-		return Token{
-			Type:  TokenCloseExpr,
-			Value: l.expr.Close,
-		}
+		return Token{Type: TokenCloseExpr, Value: l.expr.Close}, nil
 	}
 
 	ch := l.buffer.Peek()
@@ -181,44 +143,36 @@ func (l *Lexer) readExpr() Token {
 	if ch == '(' {
 		l.buffer.Advance()
 		l.exprFilled = true
-		return Token{
-			Type:  TokenOpenParen,
-			Value: "(",
-		}
+		return Token{Type: TokenOpenParen, Value: "("}, nil
 	}
 
 	if ch == ')' {
 		l.buffer.Advance()
 		l.exprFilled = true
-		return Token{
-			Type:  TokenCloseParen,
-			Value: ")",
-		}
+		return Token{Type: TokenCloseParen, Value: ")"}, nil
 	}
 
 	if ch == ',' {
 		l.buffer.Advance()
 		l.exprFilled = true
-		return Token{
-			Type:  TokenComma,
-			Value: ",",
-		}
+		return Token{Type: TokenComma, Value: ","}, nil
 	}
 
 	if ch == '"' || ch == '\'' {
 		start := l.buffer.Index
 
-		l.advanceString(ch)
+		err := l.advanceString(ch)
+
+		if err != nil {
+			return Token{}, err
+		}
 
 		l.exprFilled = true
 
-		return Token{
-			Type:  TokenString,
-			Value: l.buffer.SliceFrom(start),
-		}
+		return Token{Type: TokenString, Value: l.buffer.SliceFrom(start)}, nil
 	}
 
-	if util.IsLetter(ch) || ch == '_' {
+	if l.isLetter(ch) || ch == '_' {
 		start := l.buffer.Index
 
 		l.buffer.Advance()
@@ -226,7 +180,7 @@ func (l *Lexer) readExpr() Token {
 		for {
 			ch := l.buffer.Peek()
 
-			if !(util.IsLetter(ch) || util.IsDigit(ch) || ch == '_') {
+			if !(l.isLetter(ch) || l.isDigit(ch) || ch == '_') {
 				break
 			}
 
@@ -235,24 +189,18 @@ func (l *Lexer) readExpr() Token {
 
 		l.exprFilled = true
 
-		return Token{
-			Type:  TokenIdent,
-			Value: l.buffer.SliceFrom(start),
-		}
+		return Token{Type: TokenIdent, Value: l.buffer.SliceFrom(start)}, nil
 	}
 
-	if util.IsWhitespace(ch) {
+	if l.isWhitespace(ch) {
 		l.buffer.Advance()
 		return l.Next()
 	}
 
-	l.abort("Illegal character in expression")
-
-	// unreachable
-	return Token{}
+	return Token{}, l.error("Illegal character in expression")
 }
 
-func (l *Lexer) advanceString(quote rune) {
+func (l *Lexer) advanceString(quote rune) error {
 	// skip opening quote
 	l.buffer.Advance()
 
@@ -260,7 +208,7 @@ func (l *Lexer) advanceString(quote rune) {
 		ch := l.buffer.Peek()
 
 		if ch == 0 {
-			l.abort("Illegal unterminated string")
+			return l.error("Illegal unterminated string")
 		}
 
 		if ch == '\\' {
@@ -281,4 +229,36 @@ func (l *Lexer) advanceString(quote rune) {
 	if l.buffer.Peek() == quote {
 		l.buffer.Advance()
 	}
+
+	return nil
+}
+
+func (l *Lexer) match(str string) bool {
+	if l.buffer.Index+len(str) > len(l.buffer.Data) {
+		return false
+	}
+
+	for i, r := range str {
+		if l.buffer.Data[l.buffer.Index+i] != r {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (l *Lexer) isLetter(ch rune) bool {
+	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+}
+
+func (l *Lexer) isDigit(ch rune) bool {
+	return ch >= '0' && ch <= '9'
+}
+
+func (l *Lexer) isWhitespace(ch rune) bool {
+	return ch == ' ' || ch == '\n' || ch == '\t'
+}
+
+func (l *Lexer) error(cause string) error {
+	return fmt.Errorf("%s\n%s", cause, l.buffer)
 }

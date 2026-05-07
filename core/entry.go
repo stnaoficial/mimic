@@ -1,43 +1,38 @@
 package core
 
-type EntryType int
-
-const (
-	EntryTypeFile EntryType = iota
-	EntryTypeDirectory
-)
+import "os"
 
 type Entry struct {
 	Name string
-	Type EntryType
+	Info os.FileInfo
 	Size int
 	Data []byte
 }
 
 type EntryMap = map[string]Entry
 
-func NewFileEntry(name string, data []byte) Entry {
+func NewFileEntry(name string, info os.FileInfo, data []byte) Entry {
 	return Entry{
 		Name: name,
-		Type: EntryTypeFile,
+		Info: info,
 		Size: len(data),
 		Data: data,
 	}
 }
 
-func NewDirectoryEntry(name string) Entry {
+func NewDirectoryEntry(name string, info os.FileInfo) Entry {
 	return Entry{
 		Name: name,
-		Type: EntryTypeDirectory,
+		Info: info,
 		Size: 0,
 		Data: nil,
 	}
 }
 
 func (n Entry) IsDir() bool {
-	return n.Type == EntryTypeDirectory
+	return n.Info.IsDir()
 }
 
 func (n Entry) IsFile() bool {
-	return n.Type == EntryTypeFile
+	return !n.Info.IsDir()
 }

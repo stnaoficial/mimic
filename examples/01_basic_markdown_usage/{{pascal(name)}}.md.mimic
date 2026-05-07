@@ -1,0 +1,7 @@
+# Basic information
+Name: {{ title(name) }}
+Age: {{ age }}
+Country: {{ country }}
+
+# Biography
+{{ capitalize(bio) }}

@@ -84,21 +84,23 @@ func (s *Scanner) scanEntry(basePath string, entry util.DirectoryEntry) {
 	}
 
 	if entry.Info.IsDir() {
-		s.scanDirectoryEntry(relPath)
+		s.scanDirectoryEntry(relPath, entry)
 	} else {
-		s.scanFileEntry(relPath, entry.Path)
+		s.scanFileEntry(relPath, entry)
 	}
 }
 
-func (s *Scanner) scanDirectoryEntry(relPath string) {
+func (s *Scanner) scanDirectoryEntry(relPath string, entry util.DirectoryEntry) {
 	if s.config.DebugMode {
 		cli.LogWithPrefix(fmt.Sprintf("Scanning directory %s ...", relPath), cli.LogSeverityInfo)
 	}
 
-	s.entryMap[relPath] = NewDirectoryEntry(relPath)
+	s.entryMap[relPath] = NewDirectoryEntry(relPath, entry.Info)
 }
 
-func (s *Scanner) scanFileEntry(relPath string, fileName string) {
+func (s *Scanner) scanFileEntry(relPath string, entry util.DirectoryEntry) {
+	fileName := entry.Path
+
 	if s.config.DebugMode {
 		cli.LogWithPrefix(fmt.Sprintf("Scanning file %s ...", relPath), cli.LogSeverityInfo)
 	}
@@ -109,5 +111,5 @@ func (s *Scanner) scanFileEntry(relPath string, fileName string) {
 		cli.LogAndExit(fmt.Sprintf("Unable to obtain data from file %s", fileName), cli.LogSeverityError)
 	}
 
-	s.entryMap[relPath] = NewFileEntry(relPath, fileData)
+	s.entryMap[relPath] = NewFileEntry(relPath, entry.Info, fileData)
 }

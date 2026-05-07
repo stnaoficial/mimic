@@ -1,3 +1,4 @@
+.SILENT:
 example: ../../bin/mimic
 	yes | ../../bin/mimic \
 	--debug \

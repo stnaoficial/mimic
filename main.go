@@ -13,7 +13,8 @@ import (
 var Version = "development"
 
 const (
-	varFlagUsage = "Set a variable directly by passing a key=value pair"
+	varFlagUsage       = "Set a variable directly by passing a key=value pair"
+	varPromptFlagUsage = "Set a a variable prompt message by passing a key=value pair"
 
 	exprOpenFlagUsage  = "Set the open expression syntax (default \"{{\")"
 	exprCloseFlagUsage = "Set the close expression syntax (default \"}}\")"
@@ -27,7 +28,8 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... SOURCE TARGET\n")
 	fmt.Fprintf(os.Stderr, "Mimic interpret files and directories in the source path (./.mimic directory by default) and generate copies of them in the target path (the current directory by default).\n\n")
 	fmt.Fprintf(os.Stderr, "Provide variables directly\n")
-	fmt.Fprintf(os.Stderr, "  -v, --var       %s\n\n", varFlagUsage)
+	fmt.Fprintf(os.Stderr, "  -v, --var       %s\n", varFlagUsage)
+	fmt.Fprintf(os.Stderr, "  -p, --prompt    %s\n\n", varPromptFlagUsage)
 	fmt.Fprintf(os.Stderr, "Configure how to start mimicking\n")
 	fmt.Fprintf(os.Stderr, "  --expr-open     %s\n", exprOpenFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --expr-close    %s\n", exprCloseFlagUsage)
@@ -44,6 +46,9 @@ func main() {
 
 	flag.Var(&config.Variables, "v", varFlagUsage)
 	flag.Var(&config.Variables, "var", varFlagUsage)
+
+	flag.Var(&config.Prompts, "p", varPromptFlagUsage)
+	flag.Var(&config.Prompts, "prompt", varPromptFlagUsage)
 
 	flag.StringVar(&config.ExprOpen, "expr-open", lang.DefaultOpenExpr, exprOpenFlagUsage)
 	flag.StringVar(&config.ExprClose, "expr-close", lang.DefaultCloseExpr, exprCloseFlagUsage)
