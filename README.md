@@ -6,28 +6,16 @@
 
 ## Overview
 
-Mimic interpret files and directories in the source path (`.mimic` directory by default) and generate copies of them in the target path (the current directory by default).
+Mimic interprets files and directories from a source path (`.mimic` directory by default) and generates copies in a target path (the current directory by default).
 
 ## Usage
 
 Basic usage:
 
 ```bash
-$ mimic            # Without specifing the source and target path
-$ mimic ./.mimic . # Specifing the source and target path
+$ mimic copy            # Without specifing the source and target path
+$ mimic copy ./.mimic . # Specifing the source and target path
 ```
-
-## Flags
-
-| Flag | Long Flag | Description | Default |
-|-|-|-|-|
-| `-v` | `--var` | Set a var directly by passing as a `key=value` pair | |
-| `-p` | `--prompt` | Set a variable prompt message by passing a `key=value` pair | |
-| | `--expr-open` | Set the open expression syntax | `{{` |
-| | `--expr-close` | Set the close expression syntax | `}}` |
-| | `--debug` | Enable debug mode | false |
-| `-h` | `--help` | Print Help (this message) and exit
-| | `--version` | Print version information and exit
 
 ## How It Works
 
@@ -63,8 +51,15 @@ SomeNameOrDescription
 Provide variables directly:
 
 ```bash
-mimic -v name=value -v "name=value" -v name="value" ...
+mimic copy -v name0=value -v "name1=value" -v name2="value" ...
 ```
+
+Customize prompt messages:
+
+```bash
+mimic copy -p name0="My custom prompt message: " ...
+```
+
 
 ## Behavior Details
 
