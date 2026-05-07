@@ -19,6 +19,10 @@ func DirectoryWalk(root string) ([]DirectoryEntry, error) {
 			return err
 		}
 
+		if path == root {
+			return nil
+		}
+
 		fileInfo, err := d.Info()
 
 		if err != nil {

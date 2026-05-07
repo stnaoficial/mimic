@@ -1,10 +1,7 @@
 package core
 
 import (
-	"flag"
-	"fmt"
 	"mimic/core/util"
-	"os"
 )
 
 type Config struct {
@@ -17,13 +14,11 @@ type Config struct {
 	ExprOpen  string
 	ExprClose string
 
-	PrintVersion bool
-	version      string
-
+	Init      bool
 	DebugMode bool
 }
 
-func NewConfig(version string) *Config {
+func NewConfig() *Config {
 	return &Config{
 		SourcePath: "./.mimic",
 		TargetPath: ".",
@@ -34,35 +29,7 @@ func NewConfig(version string) *Config {
 		ExprOpen:  "{{",
 		ExprClose: "}}",
 
-		PrintVersion: false,
-		version:      version,
-
+		Init:      false,
 		DebugMode: false,
-	}
-}
-
-func (c *Config) Parse() {
-	c.parseArgs()
-
-	if c.PrintVersion {
-		fmt.Printf("Mimic version %s\n", c.version)
-		os.Exit(0)
-	}
-}
-
-func (c *Config) parseArgs() {
-	args := flag.Args()
-
-	if len(args) >= 1 {
-		c.SourcePath = args[0]
-	}
-
-	if len(args) >= 2 {
-		c.TargetPath = args[1]
-	}
-
-	if len(args) > 2 {
-		flag.Usage()
-		os.Exit(1)
 	}
 }

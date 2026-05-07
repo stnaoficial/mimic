@@ -3,75 +3,63 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
-	"mimic/core"
-	"mimic/core/cli"
-	"mimic/core/lang"
+	"mimic/core/cmd"
 	"os"
 )
 
 var Version = "development"
 
 const (
-	varFlagUsage       = "Set a variable directly by passing a key=value pair"
-	varPromptFlagUsage = "Set a a variable prompt message by passing a key=value pair"
-
-	exprOpenFlagUsage  = "Set the open expression syntax (default \"{{\")"
-	exprCloseFlagUsage = "Set the close expression syntax (default \"}}\")"
-	debugModeFlagUsage = "Enable debug mode (default false)"
-
-	helpFlagUsage         = "Print Help (this message) and exit"
+	helpFlagUsage         = "Print help (this message) and exit"
 	printVersionFlagUsage = "Print version information and exit"
 )
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... SOURCE TARGET\n")
-	fmt.Fprintf(os.Stderr, "Mimic interpret files and directories in the source path (./.mimic directory by default) and generate copies of them in the target path (the current directory by default).\n\n")
-	fmt.Fprintf(os.Stderr, "Provide variables directly\n")
-	fmt.Fprintf(os.Stderr, "  -v, --var       %s\n", varFlagUsage)
-	fmt.Fprintf(os.Stderr, "  -p, --prompt    %s\n\n", varPromptFlagUsage)
-	fmt.Fprintf(os.Stderr, "Configure how to start mimicking\n")
-	fmt.Fprintf(os.Stderr, "  --expr-open     %s\n", exprOpenFlagUsage)
-	fmt.Fprintf(os.Stderr, "  --expr-close    %s\n", exprCloseFlagUsage)
-	fmt.Fprintf(os.Stderr, "  --debug     	  %s\n\n", debugModeFlagUsage)
-	fmt.Fprintf(os.Stderr, "Get more information\n")
-	fmt.Fprintf(os.Stderr, "  -h, --help      %s\n", helpFlagUsage)
-	fmt.Fprintf(os.Stderr, "  --version       %s\n\n", printVersionFlagUsage)
+	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... [COMMAND] [ARG]...\n")
+	fmt.Fprintf(os.Stderr, "Mimic interprets files and directories from a source path (.mimic directory by default) and generates copies in a target path (the current directory by default).\n")
+	fmt.Fprintf(os.Stderr, "\nCommands:\n")
+	fmt.Fprintf(os.Stderr, "  init    %s\n", cmd.InitCommandDescription)
+	fmt.Fprintf(os.Stderr, "  copy    %s\n", cmd.CopyCommandDescription)
+	fmt.Fprintf(os.Stderr, "\nOptions:\n")
+	fmt.Fprintf(os.Stderr, "  -h, --help    %s\n", helpFlagUsage)
+	fmt.Fprintf(os.Stderr, "  --version     %s\n", printVersionFlagUsage)
+	fmt.Fprintln(os.Stderr)
 }
 
-func main() {
-	config := core.NewConfig(Version)
+func run(args []string) {
+	var printVersion bool
 
-	flag.Usage = usage
+	flagSet := flag.NewFlagSet("mimic", flag.ExitOnError)
 
-	flag.Var(&config.Variables, "v", varFlagUsage)
-	flag.Var(&config.Variables, "var", varFlagUsage)
+	flagSet.Usage = usage
+	flagSet.BoolVar(&printVersion, "version", false, printVersionFlagUsage)
 
-	flag.Var(&config.Prompts, "p", varPromptFlagUsage)
-	flag.Var(&config.Prompts, "prompt", varPromptFlagUsage)
+	flagSet.Parse(args)
 
-	flag.StringVar(&config.ExprOpen, "expr-open", lang.DefaultOpenExpr, exprOpenFlagUsage)
-	flag.StringVar(&config.ExprClose, "expr-close", lang.DefaultCloseExpr, exprCloseFlagUsage)
-
-	flag.BoolVar(&config.DebugMode, "debug", false, debugModeFlagUsage)
-
-	flag.BoolVar(&config.PrintVersion, "version", false, printVersionFlagUsage)
-
-	flag.CommandLine.SetOutput(io.Discard)
-
-	flag.Parse()
-	config.Parse()
-
-	executor := core.NewExecutor(config)
-
-	executor.Scan()
-	executor.Generate()
-
-	if !cli.MustConfirmToContinue() {
+	if printVersion {
+		fmt.Printf("Mimic version %s\n", Version)
 		os.Exit(0)
 	}
 
-	executor.Write()
+	usage()
+
+	os.Exit(1)
+}
+
+func main() {
+	if len(os.Args) < 2 {
+		usage()
+		os.Exit(1)
+	}
+
+	switch os.Args[1] {
+	case "init":
+		cmd.NewInitCommand().Run(os.Args[2:])
+	case "copy":
+		cmd.NewCopyCommand().Run(os.Args[2:])
+	default:
+		run(os.Args[1:])
+	}
 
 	os.Exit(0)
 }

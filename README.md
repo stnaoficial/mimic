@@ -6,7 +6,7 @@
 
 ## Overview
 
-Mimic interpret files and directories in the source path (`./.mimic` directory by default) and generate copies of them in the target path (the current directory by default).
+Mimic interpret files and directories in the source path (`.mimic` directory by default) and generate copies of them in the target path (the current directory by default).
 
 ## Usage
 
@@ -22,7 +22,7 @@ $ mimic ./.mimic . # Specifing the source and target path
 | Flag | Long Flag | Description | Default |
 |-|-|-|-|
 | `-v` | `--var` | Set a var directly by passing as a `key=value` pair | |
-| `-p` | `--prompt` | Set a a variable prompt message by passing a `key=value` pair | |
+| `-p` | `--prompt` | Set a variable prompt message by passing a `key=value` pair | |
 | | `--expr-open` | Set the open expression syntax | `{{` |
 | | `--expr-close` | Set the close expression syntax | `}}` |
 | | `--debug` | Enable debug mode | false |
