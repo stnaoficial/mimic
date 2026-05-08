@@ -1,25 +1,13 @@
 .SILENT:
 example: ../../bin/mimic
-	yes | ../../bin/mimic \
-	--debug \
-	-p table="Table name" \
-	-p fields="Fields definition (separated by comma)" \
-	-v table="users" \
-	-v fields="id UUID PRIMARY KEY, name TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW()" \
-	.mimic/ .
-
-	yes | ../../bin/mimic \
-	--debug \
-	-p table="Table name" \
-	-p fields="Fields definition (separated by comma)" \
-	-v table="products" \
-	-v fields="id UUID PRIMARY KEY, name TEXT NOT NULL, price INTEGER NOT NULL, currency SMALLINT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW()" \
-	.mimic/ .
-
-	yes | ../../bin/mimic \
-	--debug \
-	-p table="Table name" \
-	-p fields="Fields definition (separated by comma)" \
-	-v table="carts" \
-	-v fields="id UUID PRIMARY KEY, user_id UUID NOT NULL, product_id UUID NOT NULL, quantity INTEGER NOT NULL DEFAULT 1" \
-	.mimic/ .
+	yes | ../../bin/mimic copy \
+	-p tableName="Table name: " \
+	-p tableColumns="Columns definition (separated by comma): " \
+	-p tableFields="Fields definition (separated by comma): " \
+	-p tableValues="Values definition (separated by comma): " \
+	-v tableName="users" \
+	-v tableColumns="id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW()" \
+	-v tableFields="name" \
+	-v tableValues="\"Foo Bar Baz\"" \
+	-s .mimic/MIGRATION \
+	-s .mimic/SEED
