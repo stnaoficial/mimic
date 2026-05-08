@@ -14,8 +14,8 @@ const (
 )
 
 const (
-	CopyCommandSourceFlagUsage = "Set the source path of all the files and directories that will be copied"
-	CopyCommandTargetFlagUsage = "Set the target path for all copied files and directories"
+	CopyCommandSourceFlagUsage = "Set the source path of all the files and directories that will be copied (default .mimic)"
+	CopyCommandTargetFlagUsage = "Set the target path for all copied files and directories (default .)"
 
 	CopyCommandVarValueFlagUsage  = "Set a variable value by passing a key=value pair"
 	CopyCommandVarPromptFlagUsage = "Set a variable prompt message by passing a key=value pair"
