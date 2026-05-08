@@ -1,7 +1,6 @@
 .SILENT:
 example:
-	yes | ../../bin/mimic \
-	--debug \
+	yes | ../../bin/mimic copy \
 	-p name="What is your name? " \
 	-p age="What is your age? " \
 	-p country="Where are you from? " \
@@ -10,4 +9,4 @@ example:
 	-v age=22 \
 	-v country="Brazil" \
 	-v bio="I am a software engineer." \
-	\{\{pascal\(name\)\}\}.md.mimic .
+	-s \{\{pascal\(name\)\}\}.md.mimic -t .

@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-func MustConfirm(message string) bool {
+func Confirm(message string) bool {
 	for {
 		if answer, err := Ask(message); err != nil {
 			continue
@@ -20,8 +20,4 @@ func MustConfirm(message string) bool {
 			}
 		}
 	}
-}
-
-func MustConfirmToContinue() bool {
-	return MustConfirm("Do you want to continue [Y/n]? ")
 }

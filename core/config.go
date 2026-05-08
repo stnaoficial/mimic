@@ -5,7 +5,7 @@ import (
 )
 
 type Config struct {
-	SourcePath string
+	SourcePath util.FlagSlice
 	TargetPath string
 
 	Variables util.FlagMap
@@ -20,7 +20,7 @@ type Config struct {
 
 func NewConfig() *Config {
 	return &Config{
-		SourcePath: "./.mimic",
+		SourcePath: util.FlagSlice{},
 		TargetPath: ".",
 
 		Variables: make(util.FlagMap),

@@ -7,11 +7,11 @@ import (
 
 type FlagMap map[string]string
 
-func (f *FlagMap) String() string {
-	return fmt.Sprint(*f)
+func (m *FlagMap) String() string {
+	return fmt.Sprint(*m)
 }
 
-func (f *FlagMap) Set(value string) error {
+func (m *FlagMap) Set(value string) error {
 	parts := strings.SplitN(value, "=", 2)
 
 	if len(parts) != 2 {
@@ -21,7 +21,19 @@ func (f *FlagMap) Set(value string) error {
 	key := strings.TrimSpace(parts[0])
 	val := strings.TrimSpace(parts[1])
 
-	(*f)[key] = val
+	(*m)[key] = val
+
+	return nil
+}
+
+type FlagSlice []string
+
+func (s *FlagSlice) String() string {
+	return fmt.Sprint(*s)
+}
+
+func (s *FlagSlice) Set(value string) error {
+	*s = append(*s, value)
 
 	return nil
 }

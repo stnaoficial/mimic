@@ -1,9 +1,8 @@
 .SILENT:
 example: ../../bin/mimic
-	yes | ../../bin/mimic \
-	--debug \
+	yes | ../../bin/mimic copy \
 	--expr-open="<%" \
 	--expr-close="%>" \
 	-v name="Foo Bar Baz" \
 	-v date="$$(date +%Y-%m-%d)" \
-	.mimic/ .
+	-s .mimic/COMPONENT

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"mimic/core/cli"
 	"mimic/core/util"
 	"os"
@@ -23,30 +22,33 @@ func NewScanner(config *Config) *Scanner {
 }
 
 func (s *Scanner) Scan() EntryMap {
-	if s.config.DebugMode {
-		cli.LogWithPrefix(fmt.Sprintf("Scanning source path %s ...", s.config.SourcePath), cli.LogSeverityInfo)
-	}
-
 	s.entryMap = make(EntryMap)
 
-	sourceInfo, err := os.Stat(s.config.SourcePath)
+	for _, sourcePath := range s.config.SourcePath {
+		if s.config.DebugMode {
+			cli.Logf(cli.LogSeverityWarn, "Scanning source path %s ...\n", sourcePath)
+		}
 
-	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to obtain information about path %s", s.config.SourcePath), cli.LogSeverityError)
-	}
+		sourceInfo, err := os.Stat(sourcePath)
 
-	if sourceInfo.IsDir() {
-		s.scanSourceDirectory(s.config.SourcePath, s.config.SourcePath)
-	} else {
-		s.scanSourceFile(filepath.Dir(s.config.SourcePath), s.config.SourcePath, sourceInfo)
+		if err != nil {
+			cli.Logf(cli.LogSeverityError, "Unable to obtain information about path %s\n", sourcePath)
+			os.Exit(1)
+		}
+
+		if sourceInfo.IsDir() {
+			s.scanSourceDirectory(sourcePath, sourcePath)
+		} else {
+			s.scanSourceFile(filepath.Dir(sourcePath), sourcePath, sourceInfo)
+		}
 	}
 
 	for pathName, entry := range s.entryMap {
 		if s.config.DebugMode {
-			cli.LogWithPrefix(fmt.Sprintf("Scanned about %d bytes from %s", entry.Size, pathName), cli.LogSeverityWarn)
+			cli.Logf(cli.LogSeverityInfo, "Scanned about %d bytes from %s\n", entry.Size, pathName)
 		}
 
-		cli.Log(fmt.Sprintf("~ %s", pathName), cli.LogSeverityWarn)
+		cli.Printf(cli.Normal, cli.Cyan, "@ %s\n", pathName)
 	}
 
 	return s.entryMap
@@ -56,11 +58,13 @@ func (s *Scanner) scanSourceDirectory(basePath string, dirName string) {
 	entries, err := util.DirectoryWalk(dirName)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to walk into source directory %s", dirName), cli.LogSeverityError)
+		cli.Logf(cli.LogSeverityError, "Unable to walk into source directory %s\n", dirName)
+		os.Exit(1)
 	}
 
 	if len(entries) == 0 {
-		cli.LogAndExit(fmt.Sprintf("No entries found in source directory %s", dirName), cli.LogSeverityError)
+		cli.Logf(cli.LogSeverityError, "No entries found in source directory %s\n", dirName)
+		os.Exit(1)
 	}
 
 	for _, entry := range entries {
@@ -80,7 +84,8 @@ func (s *Scanner) scanEntry(basePath string, entry util.DirectoryEntry) {
 	relPath, err := filepath.Rel(basePath, entry.Path)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to determine relative path for %s", entry.Path), cli.LogSeverityError)
+		cli.Logf(cli.LogSeverityError, "Unable to determine relative path for %s\n", entry.Path)
+		os.Exit(1)
 	}
 
 	if entry.Info.IsDir() {
@@ -92,7 +97,7 @@ func (s *Scanner) scanEntry(basePath string, entry util.DirectoryEntry) {
 
 func (s *Scanner) scanDirectoryEntry(relPath string, entry util.DirectoryEntry) {
 	if s.config.DebugMode {
-		cli.LogWithPrefix(fmt.Sprintf("Scanning directory %s ...", relPath), cli.LogSeverityInfo)
+		cli.Logf(cli.LogSeverityWarn, "Scanning directory %s ...\n", relPath)
 	}
 
 	s.entryMap[relPath] = NewDirectoryEntry(relPath, entry.Info)
@@ -102,13 +107,14 @@ func (s *Scanner) scanFileEntry(relPath string, entry util.DirectoryEntry) {
 	fileName := entry.Path
 
 	if s.config.DebugMode {
-		cli.LogWithPrefix(fmt.Sprintf("Scanning file %s ...", relPath), cli.LogSeverityInfo)
+		cli.Logf(cli.LogSeverityWarn, "Scanning file %s ...\n", relPath)
 	}
 
 	fileData, err := os.ReadFile(fileName)
 
 	if err != nil {
-		cli.LogAndExit(fmt.Sprintf("Unable to obtain data from file %s", fileName), cli.LogSeverityError)
+		cli.Logf(cli.LogSeverityError, "Unable to obtain data from file %s\n", fileName)
+		os.Exit(1)
 	}
 
 	s.entryMap[relPath] = NewFileEntry(relPath, entry.Info, fileData)

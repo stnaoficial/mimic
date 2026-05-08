@@ -1,10 +1,10 @@
 package core
 
 import (
-	"fmt"
 	"maps"
 	"mimic/core/cli"
 	"mimic/core/lang"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -33,7 +33,7 @@ func NewGenerator(config *Config) *Generator {
 
 func (g *Generator) Generate(entryMap EntryMap) EntryMap {
 	if g.config.DebugMode {
-		cli.LogWithPrefix(fmt.Sprintf("Generating files for directory %s ...", g.config.TargetPath), cli.LogSeverityInfo)
+		cli.Logf(cli.LogSeverityWarn, "Generating files for directory %s ...\n", g.config.TargetPath)
 	}
 
 	g.entryMap = make(EntryMap)
@@ -46,7 +46,8 @@ func (g *Generator) Generate(entryMap EntryMap) EntryMap {
 		result, err := g.comp.Compile(lang.NewBuffer("<pathname>", pathName))
 
 		if err != nil {
-			cli.LogAndExit(err.Error(), cli.LogSeverityError)
+			cli.Logln(cli.LogSeverityError, err.Error())
+			os.Exit(0)
 		}
 
 		pathName = filepath.Join(g.config.TargetPath, result)
@@ -63,7 +64,7 @@ func (g *Generator) Generate(entryMap EntryMap) EntryMap {
 
 func (g *Generator) generateDirectory(dirName string, entry Entry) {
 	if g.config.DebugMode {
-		cli.LogWithPrefix(fmt.Sprintf("Generating directory %s ...", dirName), cli.LogSeverityInfo)
+		cli.Logf(cli.LogSeverityWarn, "Generating directory %s ...\n", dirName)
 	}
 
 	g.entryMap[dirName] = entry
@@ -77,14 +78,15 @@ func (g *Generator) generateFile(fileName string, entry Entry) {
 	}
 
 	if g.config.DebugMode {
-		cli.LogWithPrefix(fmt.Sprintf("Generating file %s ...", fileName), cli.LogSeverityInfo)
+		cli.Logf(cli.LogSeverityWarn, "Generating file %s ...\n", fileName)
 	}
 
 	if isCompilable {
 		result, err := g.comp.Compile(lang.NewBuffer(fileName, string(entry.Data)))
 
 		if err != nil {
-			cli.LogAndExit(err.Error(), cli.LogSeverityError)
+			cli.Logln(cli.LogSeverityError, err.Error())
+			os.Exit(0)
 		}
 
 		entry.Data = []byte(result)

@@ -14,7 +14,10 @@ const (
 )
 
 const (
-	CopyCommandVarFlagUsage       = "Set a variable value by passing a key=value pair"
+	CopyCommandSourceFlagUsage = "Set the source path of all the files and directories that will be copied"
+	CopyCommandTargetFlagUsage = "Set the target path for all copied files and directories"
+
+	CopyCommandVarValueFlagUsage  = "Set a variable value by passing a key=value pair"
 	CopyCommandVarPromptFlagUsage = "Set a variable prompt message by passing a key=value pair"
 
 	CopyCommandExprOpenFlagUsage  = "Set the open expression syntax (default \"{{\")"
@@ -24,10 +27,12 @@ const (
 )
 
 func CopyCommandUsage() {
-	fmt.Fprintf(os.Stderr, "Usage: mimic copy [OPTION]... SOURCE TARGET\n")
+	fmt.Fprintf(os.Stderr, "Usage: mimic copy [OPTION]...\n")
 	fmt.Fprintf(os.Stderr, "%s\n", CopyCommandDescription)
 	fmt.Fprintf(os.Stderr, "\nOptions:\n")
-	fmt.Fprintf(os.Stderr, "  -v, --var       %s\n", CopyCommandVarFlagUsage)
+	fmt.Fprintf(os.Stderr, "  -s, --source    %s\n", CopyCommandSourceFlagUsage)
+	fmt.Fprintf(os.Stderr, "  -t, --target    %s\n", CopyCommandTargetFlagUsage)
+	fmt.Fprintf(os.Stderr, "  -v, --var       %s\n", CopyCommandVarValueFlagUsage)
 	fmt.Fprintf(os.Stderr, "  -p, --prompt    %s\n", CopyCommandVarPromptFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --expr-open     %s\n", CopyCommandExprOpenFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --expr-close    %s\n", CopyCommandExprCloseFlagUsage)
@@ -49,12 +54,21 @@ func NewCopyCommand() *CopyCommand {
 
 	flagSet.Usage = CopyCommandUsage
 
-	flagSet.Var(&config.Variables, "v", CopyCommandVarFlagUsage)
-	flagSet.Var(&config.Variables, "var", CopyCommandVarFlagUsage)
+	flagSet.Var(&config.SourcePath, "s", CopyCommandSourceFlagUsage)
+	flagSet.Var(&config.SourcePath, "source", CopyCommandSourceFlagUsage)
+
+	flagSet.StringVar(&config.TargetPath, "t", ".", CopyCommandTargetFlagUsage)
+	flagSet.StringVar(&config.TargetPath, "target", ".", CopyCommandTargetFlagUsage)
+
+	flagSet.Var(&config.Variables, "v", CopyCommandVarValueFlagUsage)
+	flagSet.Var(&config.Variables, "var", CopyCommandVarValueFlagUsage)
+
 	flagSet.Var(&config.Prompts, "p", CopyCommandVarPromptFlagUsage)
 	flagSet.Var(&config.Prompts, "prompt", CopyCommandVarPromptFlagUsage)
+
 	flagSet.StringVar(&config.ExprOpen, "expr-open", lang.DefaultOpenExpr, CopyCommandExprOpenFlagUsage)
 	flagSet.StringVar(&config.ExprClose, "expr-close", lang.DefaultCloseExpr, CopyCommandExprCloseFlagUsage)
+
 	flagSet.BoolVar(&config.DebugMode, "debug", false, CopyCommandDebugModeFlagUsage)
 
 	return &CopyCommand{
@@ -67,21 +81,11 @@ func NewCopyCommand() *CopyCommand {
 func (c *CopyCommand) Run(args []string) {
 	c.FlagSet.Parse(args)
 
-	parsedArgs := c.FlagSet.Args()
-
-	if len(parsedArgs) >= 1 {
-		c.config.SourcePath = parsedArgs[0]
-	}
-
-	if len(parsedArgs) >= 2 {
-		c.config.TargetPath = parsedArgs[1]
-	}
-
 	filesRead := core.NewScanner(c.config).Scan()
 
 	filesGenerated := core.NewGenerator(c.config).Generate(filesRead)
 
-	if !cli.MustConfirmToContinue() {
+	if !cli.Confirm("Do you want to continue [Y/n]? ") {
 		os.Exit(0)
 	}
 
