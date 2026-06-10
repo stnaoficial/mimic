@@ -33,3 +33,6 @@ go.work.sum
 
 # Releases directory
 releases/
+
+# Mimic templates
+.mimic

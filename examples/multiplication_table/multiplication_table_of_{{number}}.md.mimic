@@ -1,0 +1,12 @@
+# Multiplication table of {{ number }}
+
+ 1 x {{ number }} = {{ number_x_1 }}
+ 2 x {{ number }} = {{ number_x_2 }}
+ 3 x {{ number }} = {{ number_x_3 }}
+ 4 x {{ number }} = {{ number_x_4 }}
+ 5 x {{ number }} = {{ number_x_5 }}
+ 6 x {{ number }} = {{ number_x_6 }}
+ 7 x {{ number }} = {{ number_x_7 }}
+ 8 x {{ number }} = {{ number_x_8 }}
+ 9 x {{ number }} = {{ number_x_9 }}
+10 x {{ number }} = {{ number_x_10 }}

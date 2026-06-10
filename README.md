@@ -1,5 +1,5 @@
 <h1 align="center">
-   <img src="./public/icon.jpg" width="80px" height="80px" />
+   <img src="./assets/icon.jpg" width="80px" height="80px" />
    <br>
    Mimic Templating Library
 </h1>
@@ -60,13 +60,9 @@ Customize prompt messages:
 mimic copy -p name0="My custom prompt message: " ...
 ```
 
-
 ## Behavior Details
 
 * Only files ending with `.mimic` are processed
 * The `.mimic` suffix is removed in generated files
-* Directory structure is preserved
+* Directory structure is preserved, as are non-mimic files
 * Missing directories are created automatically
-
-<br/>
-<img src="./public/banner.jpg" />

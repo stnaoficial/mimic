@@ -1,5 +1,0 @@
-INSERT INTO {{ lower(snake(tableName)) }}(
-    {{ lower(tableFields) }}
-) VALUES (
-    {{ tableValues }}
-)

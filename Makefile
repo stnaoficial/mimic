@@ -1,10 +1,14 @@
-.SILENT:
+# Testing project features
+test: main.go
+	go test -v ./tests/**
 
-VERSION := $(shell git tag --sort=-version:refname | head -n 1)
-RELEASE_DIR := ./releases/$(VERSION)
-
+# Building project binaries
 build: main.go
 	go build -o ./bin/mimic main.go
+
+# Releasing a new version
+VERSION := $(shell git tag --sort=-version:refname | head -n 1)
+RELEASE_DIR := ./releases/$(VERSION)
 
 release: main.go
 	mkdir -p "$(RELEASE_DIR)/linux-amd64"
