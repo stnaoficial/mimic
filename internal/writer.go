@@ -3,13 +3,15 @@ package internal
 import (
 	"fmt"
 	"mimic/internal/cli"
+	"mimic/internal/merge"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 type Writer struct {
-	config *Config
+	config   *Config
+	strategy *merge.Strategy
 
 	entryMap EntryMap
 
@@ -18,7 +20,8 @@ type Writer struct {
 
 func NewWriter(config *Config, debug bool) *Writer {
 	return &Writer{
-		config: config,
+		config:   config,
+		strategy: merge.NewStrategy(),
 
 		entryMap: make(EntryMap),
 
@@ -83,7 +86,15 @@ func (w *Writer) writeFile(fileName string, entry Entry) {
 		os.Exit(1)
 	}
 
-	if err := os.WriteFile(fileName, entry.Data, 0644); err != nil {
+	var data = entry.Data
+
+	if fileData, err := os.ReadFile(fileName); err == nil {
+		if result, err := w.strategy.Merge(string(fileData), string(entry.Data)); err == nil {
+			data = []byte(result)
+		}
+	}
+
+	if err := os.WriteFile(fileName, data, 0644); err != nil {
 		cli.Logf(cli.LogSeverityError, "Unable to write file %s\n", fileName)
 		os.Exit(1)
 	}

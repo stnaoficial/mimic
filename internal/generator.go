@@ -6,6 +6,7 @@ import (
 	"mimic/internal/lang"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -44,7 +45,15 @@ func (g *Generator) defineGlobalVars() {
 	g.comp.Env.Vars["__TARGETPATH__"] = g.config.TargetPath.String()
 }
 
-func (g *Generator) defineLocalVars(pathName string, fileInfo os.FileInfo, data []byte) {
+func (g *Generator) defineLocalVars(pathName string, entry Entry) {
+	dirName := filepath.Dir(pathName)
+
+	if entries, err := os.ReadDir(dirName); err != nil {
+		g.comp.Env.Vars["__COUNT__"] = "0"
+	} else {
+		g.comp.Env.Vars["__COUNT__"] = strconv.Itoa(len(entries))
+	}
+
 	g.comp.Env.Vars["__BASEPATH__"] = filepath.Dir(pathName)
 	g.comp.Env.Vars["__BASENAME__"] = filepath.Base(pathName)
 
@@ -52,11 +61,11 @@ func (g *Generator) defineLocalVars(pathName string, fileInfo os.FileInfo, data 
 	delete(g.comp.Env.Vars, "__FILENAME__")
 	delete(g.comp.Env.Vars, "__FILEDATA__")
 
-	if fileInfo.IsDir() {
+	if entry.Info.IsDir() {
 		g.comp.Env.Vars["__DIRNAME__"] = pathName
 	} else {
 		g.comp.Env.Vars["__FILENAME__"] = pathName
-		g.comp.Env.Vars["__FILEDATA__"] = string(data)
+		g.comp.Env.Vars["__FILEDATA__"] = string(entry.Data)
 	}
 }
 
@@ -71,7 +80,7 @@ func (g *Generator) Generate(entryMap EntryMap) EntryMap {
 		}
 
 		for pathName, entry := range entryMap {
-			g.defineLocalVars(pathName, entry.Info, entry.Data)
+			g.defineLocalVars(pathName, entry)
 
 			result, err := g.comp.Compile(lang.NewBuffer("<pathname>", pathName))
 

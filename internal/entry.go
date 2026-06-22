@@ -29,10 +29,10 @@ func NewDirectoryEntry(name string, info os.FileInfo) Entry {
 	}
 }
 
-func (n Entry) IsDir() bool {
-	return n.Info.IsDir()
+func (e *Entry) IsDir() bool {
+	return e.Info.IsDir()
 }
 
-func (n Entry) IsFile() bool {
-	return !n.Info.IsDir()
+func (e *Entry) IsFile() bool {
+	return !e.Info.IsDir()
 }

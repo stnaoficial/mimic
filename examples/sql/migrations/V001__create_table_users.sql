@@ -1,7 +1,0 @@
-BEGIN;
-
-CREATE TABLE users (
-    -- TODO
-)
-
-COMMIT;
