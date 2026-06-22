@@ -11,13 +11,17 @@ type Scanner struct {
 	config *Config
 
 	entryMap EntryMap
+
+	debug bool
 }
 
-func NewScanner(config *Config) *Scanner {
+func NewScanner(config *Config, debug bool) *Scanner {
 	return &Scanner{
 		config: config,
 
 		entryMap: make(EntryMap),
+
+		debug: debug,
 	}
 }
 
@@ -25,7 +29,7 @@ func (s *Scanner) Scan() EntryMap {
 	s.entryMap = make(EntryMap)
 
 	for _, sourcePath := range s.config.SourcePath.Values {
-		if s.config.DebugMode {
+		if s.debug {
 			cli.Logf(cli.LogSeverityWarn, "Scanning source path %s ...\n", sourcePath)
 		}
 
@@ -44,7 +48,7 @@ func (s *Scanner) Scan() EntryMap {
 	}
 
 	for pathName, entry := range s.entryMap {
-		if s.config.DebugMode {
+		if s.debug {
 			cli.Logf(cli.LogSeverityInfo, "Scanned about %d bytes from %s\n", entry.Size, pathName)
 		}
 
@@ -96,7 +100,7 @@ func (s *Scanner) scanEntry(basePath string, entry util.DirectoryEntry) {
 }
 
 func (s *Scanner) scanDirectoryEntry(relPath string, entry util.DirectoryEntry) {
-	if s.config.DebugMode {
+	if s.debug {
 		cli.Logf(cli.LogSeverityWarn, "Scanning directory %s ...\n", relPath)
 	}
 
@@ -106,7 +110,7 @@ func (s *Scanner) scanDirectoryEntry(relPath string, entry util.DirectoryEntry) 
 func (s *Scanner) scanFileEntry(relPath string, entry util.DirectoryEntry) {
 	fileName := entry.Path
 
-	if s.config.DebugMode {
+	if s.debug {
 		cli.Logf(cli.LogSeverityWarn, "Scanning file %s ...\n", relPath)
 	}
 

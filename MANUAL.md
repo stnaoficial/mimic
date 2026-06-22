@@ -20,8 +20,6 @@
   - [Case separators](#case-separators)
   - [Miscellaneous](#miscellaneous)
 
-- [Shell Support](#shell-support)
-
 ## Variables
 
 ### Variable Syntax
@@ -85,8 +83,4 @@ Functions may be used in expressions like `{{ upper(name) }}` or `{{ lower(repla
 |-|-|-|
 | `replace` | Replaces all occurrences of a value with another. Requires three arguments: value, old and new. | `{{ replace(name, " ", "-") }}` |
 | `normalize` | Removing diacritics of a value. | `{{ normalize(name) }}` |
-| `join` | Join a value by a given space separator. | `{{ join(name, "~") }}` |
-
-## Shell Support
-
-Shell support is provided via the `$()` function.
+| `delimit` | Delimit a value by a given space delimiter. | `{{ delimit(name, "~") }}` |

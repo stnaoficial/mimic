@@ -3,6 +3,7 @@ package lang
 import (
 	"fmt"
 	"mimic/internal/cli"
+	"mimic/internal/util"
 )
 
 type Evaluator struct {
@@ -19,14 +20,14 @@ func NewEvaluator(env *Environment, strict bool) *Evaluator {
 	}
 }
 
-func (e *Evaluator) solve(name string) string {
+func (e *Evaluator) prompt(name string) string {
 	prompt, ok := e.env.Prompts[name]
 
 	if !ok {
 		prompt = fmt.Sprintf("Please enter a value for \"%s\": ", name)
 	}
 
-	return cli.MustAsk(prompt)
+	return cli.MustPrompt(prompt)
 }
 
 func (e *Evaluator) Eval(node Node) (any, error) {
@@ -38,6 +39,9 @@ func (e *Evaluator) Eval(node Node) (any, error) {
 	case String:
 		return n.Value, nil
 
+	case Number:
+		return n.Value, nil
+
 	case Identifier:
 		if value, ok := e.env.Vars[n.Name]; ok {
 			return value, nil
@@ -47,11 +51,75 @@ func (e *Evaluator) Eval(node Node) (any, error) {
 			return nil, fmt.Errorf("Undefined variable \"%s\"", n.Name)
 		}
 
-		value := e.solve(n.Name)
+		value := e.prompt(n.Name)
 
 		e.env.Vars[n.Name] = value
 
 		return value, nil
+
+	case Unary:
+		value, err := e.Eval(n.Value)
+
+		if err != nil {
+			return nil, err
+		}
+
+		number, err := util.NumberValue(value)
+
+		if err != nil {
+			return nil, err
+		}
+
+		switch n.Operator {
+		case TokenPlus:
+			return number, nil
+
+		case TokenMinus:
+			return -number, nil
+		}
+
+		return nil, fmt.Errorf("Unsupported unary operator")
+
+	case Binary:
+		left, err := e.Eval(n.Left)
+
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := e.Eval(n.Right)
+
+		if err != nil {
+			return nil, err
+		}
+
+		leftNumber, err := util.NumberValue(left)
+
+		if err != nil {
+			return nil, err
+		}
+
+		rightNumber, err := util.NumberValue(right)
+
+		if err != nil {
+			return nil, err
+		}
+
+		switch n.Operator {
+		case TokenPlus:
+			return leftNumber + rightNumber, nil
+
+		case TokenMinus:
+			return leftNumber - rightNumber, nil
+
+		case TokenMultiply:
+			return leftNumber * rightNumber, nil
+
+		case TokenDivide:
+			return leftNumber / rightNumber, nil
+		}
+
+		return nil, fmt.Errorf("Unsupported binary operator")
 
 	case Callable:
 		fn, ok := e.env.Funcs[n.Name]
@@ -89,9 +157,5 @@ func (e *Evaluator) EvalAsString(node Node) (string, error) {
 		return "", err
 	}
 
-	if str, ok := value.(string); ok {
-		return str, nil
-	}
-
-	return "", fmt.Errorf("Unsupported string conversion")
+	return util.StringValue(value)
 }

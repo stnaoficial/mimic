@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"time"
 )
 
 type LogSeverity int
@@ -14,17 +15,19 @@ const (
 )
 
 func prefix(severity LogSeverity) string {
+	now := time.Now().UTC().Format(time.RFC3339)
+
 	switch severity {
 	case LogSeverityInfo:
-		return "[INFO]"
+		return fmt.Sprintf("%s [INFO]", now)
 	case LogSeveritySuccess:
-		return "[SUCCESS]"
+		return fmt.Sprintf("%s [SUCCESS]", now)
 	case LogSeverityWarn:
-		return "[WARN]"
+		return fmt.Sprintf("%s [WARN]", now)
 	case LogSeverityError:
-		return "[ERROR]"
+		return fmt.Sprintf("%s [ERROR]", now)
 	default:
-		return "[UNKNOWN]"
+		return fmt.Sprintf("%s [UNKNOWN]", now)
 	}
 }
 

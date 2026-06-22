@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"mimic/internal/cmd"
 	"os"
 )
@@ -19,6 +20,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "Mimic interprets files and directories from a source path (.mimic directory by default) and generates copies in a target path (the current directory by default).\n")
 	fmt.Fprintf(os.Stderr, "\nCommands:\n")
 	fmt.Fprintf(os.Stderr, "  init    %s\n", cmd.InitCommandDescription)
+	fmt.Fprintf(os.Stderr, "  dump    %s\n", cmd.DumpCommandDescription)
 	fmt.Fprintf(os.Stderr, "  copy    %s\n", cmd.CopyCommandDescription)
 	fmt.Fprintf(os.Stderr, "\nOptions:\n")
 	fmt.Fprintf(os.Stderr, "  -h, --help    %s\n", helpFlagUsage)
@@ -30,6 +32,7 @@ func run(args []string) {
 	var printVersion bool
 
 	flagSet := flag.NewFlagSet("mimic", flag.ExitOnError)
+	flagSet.SetOutput(io.Discard)
 
 	flagSet.Usage = usage
 	flagSet.BoolVar(&printVersion, "version", false, printVersionFlagUsage)
@@ -55,6 +58,8 @@ func main() {
 	switch os.Args[1] {
 	case "init":
 		cmd.NewInitCommand().Run(os.Args[2:])
+	case "dump":
+		cmd.NewDumpCommand().Run(os.Args[2:])
 	case "copy":
 		cmd.NewCopyCommand().Run(os.Args[2:])
 	default:

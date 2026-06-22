@@ -20,6 +20,14 @@
       "end": "\\}\\}",
       "patterns": [
         {
+          "name": "constant.numeric",
+          "match": "\\b\\d+(?:\\.\\d+)?\\b"
+        },
+        {
+          "name": "keyword.operator.arithmetic",
+          "match": "(\\+|-|\\*|/|%)"
+        },
+        {
           "name": "string.quoted.double",
           "begin": "\"",
           "end": "\"",

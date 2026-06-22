@@ -3,6 +3,7 @@ package cmd
 import (
 	"flag"
 	"fmt"
+	"io"
 	"mimic/internal"
 	"mimic/internal/cli"
 	"mimic/internal/lang"
@@ -14,7 +15,7 @@ const (
 )
 
 const (
-	CopyCommandSourceFlagUsage = "Set the source path of all the files and directories that will be copied (default .mimic)"
+	CopyCommandSourceFlagUsage = "Set the source path of all files and directories to copy (default .mimic)"
 	CopyCommandTargetFlagUsage = "Set the target path for all copied files and directories (default .)"
 
 	CopyCommandVarValueFlagUsage  = "Set a variable value by passing a key=value pair"
@@ -23,7 +24,8 @@ const (
 	CopyCommandExprOpenFlagUsage  = "Set the open expression syntax (default \"{{\")"
 	CopyCommandExprCloseFlagUsage = "Set the close expression syntax (default \"}}\")"
 
-	CopyCommandDebugModeFlagUsage = "Enable debug mode (default false)"
+	CopyCommandDebugModeFlagUsage  = "Enable debug mode (default false)"
+	CopyCommandStrictModeFlagUsage = "Enable strict mode (default false)"
 )
 
 func CopyCommandUsage() {
@@ -37,20 +39,34 @@ func CopyCommandUsage() {
 	fmt.Fprintf(os.Stderr, "  --expr-open     %s\n", CopyCommandExprOpenFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --expr-close    %s\n", CopyCommandExprCloseFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --debug     	  %s\n", CopyCommandDebugModeFlagUsage)
+	fmt.Fprintf(os.Stderr, "  --strict     	  %s\n", CopyCommandStrictModeFlagUsage)
 	fmt.Fprintln(os.Stderr)
+}
+
+type CopyCommandConfig struct {
+	*internal.Config
+
+	DebugMode  bool
+	StrictMode bool
 }
 
 type CopyCommand struct {
 	FlagSet *flag.FlagSet
 
-	config *internal.Config
+	config *CopyCommandConfig
+}
+
+func NewCopyCommandConfig() *CopyCommandConfig {
+	return &CopyCommandConfig{
+		Config: internal.NewConfig(),
+	}
 }
 
 func NewCopyCommand() *CopyCommand {
-	config := internal.NewConfig()
-	flagSet := flag.NewFlagSet("copy", flag.ExitOnError)
+	config := NewCopyCommandConfig()
 
-	flagSet.SetOutput(os.Stderr)
+	flagSet := flag.NewFlagSet("copy", flag.ExitOnError)
+	flagSet.SetOutput(io.Discard)
 
 	flagSet.Usage = CopyCommandUsage
 
@@ -70,6 +86,7 @@ func NewCopyCommand() *CopyCommand {
 	flagSet.StringVar(&config.ExprClose, "expr-close", lang.DefaultCloseExpr, CopyCommandExprCloseFlagUsage)
 
 	flagSet.BoolVar(&config.DebugMode, "debug", false, CopyCommandDebugModeFlagUsage)
+	flagSet.BoolVar(&config.StrictMode, "strict", false, CopyCommandStrictModeFlagUsage)
 
 	return &CopyCommand{
 		FlagSet: flagSet,
@@ -81,13 +98,13 @@ func NewCopyCommand() *CopyCommand {
 func (c *CopyCommand) Run(args []string) {
 	c.FlagSet.Parse(args)
 
-	filesRead := internal.NewScanner(c.config).Scan()
+	filesRead := internal.NewScanner(c.config.Config, c.config.DebugMode).Scan()
 
-	filesGenerated := internal.NewGenerator(c.config).Generate(filesRead)
+	filesGenerated := internal.NewGenerator(c.config.Config, c.config.DebugMode, c.config.StrictMode).Generate(filesRead)
 
 	if !cli.Confirm("Do you want to continue [Y/n]? ") {
 		os.Exit(0)
 	}
 
-	internal.NewWriter(c.config).Write(filesGenerated)
+	internal.NewWriter(c.config.Config, c.config.DebugMode).Write(filesGenerated)
 }

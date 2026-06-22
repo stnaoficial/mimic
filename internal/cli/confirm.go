@@ -6,7 +6,7 @@ import (
 
 func Confirm(message string) bool {
 	for {
-		if answer, err := Ask(message); err != nil {
+		if answer, err := Prompt(message); err != nil {
 			continue
 
 		} else {

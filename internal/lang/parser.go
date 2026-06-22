@@ -13,8 +13,23 @@ type String struct {
 	Value string
 }
 
+type Number struct {
+	Value float64
+}
+
 type Identifier struct {
 	Name string
+}
+
+type Binary struct {
+	Left     Node
+	Operator TokenType
+	Right    Node
+}
+
+type Unary struct {
+	Operator TokenType
+	Value    Node
 }
 
 type Callable struct {
@@ -34,7 +49,9 @@ func NewParser(lexer *Lexer) *Parser {
 }
 
 func (p *Parser) Parse() (Node, error) {
-	p.next()
+	if err := p.next(); err != nil {
+		return nil, err
+	}
 
 	if p.curr.Type == TokenCloseExpr {
 		return Null{}, nil
@@ -54,7 +71,95 @@ func (p *Parser) Parse() (Node, error) {
 }
 
 func (p *Parser) parseExpression() (Node, error) {
-	if p.curr.Type == TokenString {
+	return p.parseAdditiveOrSubtractiveExpression()
+}
+
+func (p *Parser) parseAdditiveOrSubtractiveExpression() (Node, error) {
+	left, err := p.parseMultiplicationOrDivisionExpression()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for p.curr.Type == TokenPlus || p.curr.Type == TokenMinus {
+		op := p.curr.Type
+
+		// next token
+		if err := p.next(); err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseMultiplicationOrDivisionExpression()
+
+		if err != nil {
+			return nil, err
+		}
+
+		left = Binary{
+			Left:     left,
+			Operator: op,
+			Right:    right,
+		}
+	}
+
+	return left, nil
+}
+
+func (p *Parser) parseMultiplicationOrDivisionExpression() (Node, error) {
+	left, err := p.parseUnary()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for p.curr.Type == TokenMultiply || p.curr.Type == TokenDivide {
+		op := p.curr.Type
+
+		// next token
+		if err := p.next(); err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseUnary()
+
+		if err != nil {
+			return nil, err
+		}
+
+		left = Binary{
+			Left:     left,
+			Operator: op,
+			Right:    right,
+		}
+	}
+
+	return left, nil
+}
+
+func (p *Parser) parseUnary() (Node, error) {
+	if p.curr.Type == TokenPlus || p.curr.Type == TokenMinus {
+		op := p.curr.Type
+
+		// next token
+		if err := p.next(); err != nil {
+			return nil, err
+		}
+
+		value, err := p.parseUnary()
+
+		if err != nil {
+			return nil, err
+		}
+
+		return Unary{Operator: op, Value: value}, nil
+	}
+
+	return p.parsePrimary()
+}
+
+func (p *Parser) parsePrimary() (Node, error) {
+	switch p.curr.Type {
+	case TokenString:
 		value := p.curr.Value
 
 		// next token
@@ -69,10 +174,48 @@ func (p *Parser) parseExpression() (Node, error) {
 		}
 
 		return String{Value: str}, nil
-	}
 
-	if p.curr.Type == TokenIdentifier {
+	case TokenNumber:
+		value := p.curr.Value
+
+		// next token
+		if err := p.next(); err != nil {
+			return nil, err
+		}
+
+		number, err := strconv.ParseFloat(value, 64)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return Number{Value: number}, nil
+
+	case TokenIdentifier:
 		return p.parseIdentifierOrCall()
+
+	case TokenOpenParen:
+		// next token
+		if err := p.next(); err != nil {
+			return nil, err
+		}
+
+		expr, err := p.parseExpression()
+
+		if err != nil {
+			return nil, err
+		}
+
+		if p.curr.Type != TokenCloseParen {
+			return nil, p.error("Expected ')'")
+		}
+
+		// next token
+		if err := p.next(); err != nil {
+			return nil, err
+		}
+
+		return expr, nil
 	}
 
 	return nil, p.error("Invalid expression")

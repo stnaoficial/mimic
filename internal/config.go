@@ -13,9 +13,6 @@ type Config struct {
 
 	ExprOpen  string
 	ExprClose string
-
-	Init      bool
-	DebugMode bool
 }
 
 func NewConfig() *Config {

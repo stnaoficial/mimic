@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Ask(question string) (string, error) {
+func Prompt(question string) (string, error) {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print(question)
@@ -17,9 +17,9 @@ func Ask(question string) (string, error) {
 	return strings.TrimSpace(answer), err
 }
 
-func MustAsk(question string) string {
+func MustPrompt(question string) string {
 	for {
-		if answer, err := Ask(question); err != nil {
+		if answer, err := Prompt(question); err != nil {
 			continue
 		} else {
 			answer = strings.TrimSpace(answer)

@@ -3,6 +3,7 @@ package cmd
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -22,8 +23,7 @@ func InitCommandUsage() {
 
 func NewInitCommand() *InitCommand {
 	flagSet := flag.NewFlagSet("init", flag.ExitOnError)
-
-	flagSet.SetOutput(os.Stderr)
+	flagSet.SetOutput(io.Discard)
 
 	flagSet.Usage = InitCommandUsage
 

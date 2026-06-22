@@ -14,22 +14,28 @@ type Generator struct {
 	comp   *lang.Compiler
 
 	entryMap EntryMap
+
+	debug  bool
+	strict bool
 }
 
-func NewGenerator(config *Config) *Generator {
+func NewGenerator(config *Config, debug bool, strict bool) *Generator {
 	env := lang.NewEnvironment()
 	maps.Copy(env.Vars, config.Variables)
 	maps.Copy(env.Prompts, config.Prompts)
 
 	expr := lang.NewExpressionConfigurable(config.ExprOpen, config.ExprClose)
 
-	comp := lang.NewCompilerConfigurable(env, expr, false)
+	comp := lang.NewCompilerConfigurable(env, expr, strict)
 
 	return &Generator{
 		config: config,
 		comp:   comp,
 
 		entryMap: make(EntryMap),
+
+		debug:  debug,
+		strict: strict,
 	}
 }
 
@@ -60,7 +66,7 @@ func (g *Generator) Generate(entryMap EntryMap) EntryMap {
 	g.defineGlobalVars()
 
 	for _, targetPath := range g.config.TargetPath.Values {
-		if g.config.DebugMode {
+		if g.debug {
 			cli.Logf(cli.LogSeverityWarn, "Generating files for directory %s ...\n", targetPath)
 		}
 
@@ -88,7 +94,7 @@ func (g *Generator) Generate(entryMap EntryMap) EntryMap {
 }
 
 func (g *Generator) generateDirectory(dirName string, entry Entry) {
-	if g.config.DebugMode {
+	if g.debug {
 		cli.Logf(cli.LogSeverityWarn, "Generating directory %s ...\n", dirName)
 	}
 
@@ -102,7 +108,7 @@ func (g *Generator) generateFile(fileName string, entry Entry) {
 		fileName = before
 	}
 
-	if g.config.DebugMode {
+	if g.debug {
 		cli.Logf(cli.LogSeverityWarn, "Generating file %s ...\n", fileName)
 	}
 

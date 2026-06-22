@@ -10,10 +10,15 @@ type ModeType int
 const (
 	TokenRaw TokenType = iota
 	TokenString
+	TokenNumber
 	TokenIdentifier
 	TokenOpenParen
 	TokenCloseParen
 	TokenComma
+	TokenPlus
+	TokenMinus
+	TokenMultiply
+	TokenDivide
 	TokenOpenExpr
 	TokenCloseExpr
 	TokenEOF
@@ -30,6 +35,8 @@ func (t TokenType) String() string {
 		return "TokenRaw"
 	case TokenString:
 		return "TokenString"
+	case TokenNumber:
+		return "TokenNumber"
 	case TokenIdentifier:
 		return "TokenIdentifier"
 	case TokenOpenParen:
@@ -38,6 +45,14 @@ func (t TokenType) String() string {
 		return "TokenCloseParen"
 	case TokenComma:
 		return "TokenComma"
+	case TokenPlus:
+		return "TokenPlus"
+	case TokenMinus:
+		return "TokenMinus"
+	case TokenMultiply:
+		return "TokenMultiply"
+	case TokenDivide:
+		return "TokenDivide"
 	case TokenOpenExpr:
 		return "TokenOpenExpr"
 	case TokenCloseExpr:
@@ -152,6 +167,26 @@ func (l *Lexer) readExpr() (Token, error) {
 		return Token{Type: TokenComma, Value: ","}, nil
 	}
 
+	if ch == '+' {
+		l.buffer.Advance()
+		return Token{Type: TokenPlus, Value: "+"}, nil
+	}
+
+	if ch == '-' {
+		l.buffer.Advance()
+		return Token{Type: TokenMinus, Value: "-"}, nil
+	}
+
+	if ch == '*' {
+		l.buffer.Advance()
+		return Token{Type: TokenMultiply, Value: "*"}, nil
+	}
+
+	if ch == '/' {
+		l.buffer.Advance()
+		return Token{Type: TokenDivide, Value: "/"}, nil
+	}
+
 	if ch == '"' || ch == '\'' {
 		start := l.buffer.Index
 
@@ -160,6 +195,16 @@ func (l *Lexer) readExpr() (Token, error) {
 		}
 
 		return Token{Type: TokenString, Value: l.buffer.SliceFrom(start)}, nil
+	}
+
+	if l.isDigit(ch) {
+		start := l.buffer.Index
+
+		if err := l.advanceNumber(); err != nil {
+			return Token{}, err
+		}
+
+		return Token{Type: TokenNumber, Value: l.buffer.SliceFrom(start)}, nil
 	}
 
 	if l.isLetter(ch) || ch == '_' {
@@ -213,17 +258,22 @@ func (l *Lexer) advanceString(quote rune) error {
 	return nil
 }
 
+func (l *Lexer) advanceNumber() error {
+	// skip first digit
+	l.buffer.Advance()
+
+	for l.isNumberPart(l.buffer.Peek()) {
+		l.buffer.Advance()
+	}
+
+	return nil
+}
+
 func (l *Lexer) advanceIdentifier() error {
 	// skip first letter
 	l.buffer.Advance()
 
-	for {
-		ch := l.buffer.Peek()
-
-		if !l.isIdentifierPart(ch) {
-			break
-		}
-
+	for l.isIdentifierPart(l.buffer.Peek()) {
 		l.buffer.Advance()
 	}
 
@@ -244,22 +294,6 @@ func (l *Lexer) match(str string) bool {
 	return true
 }
 
-func (l *Lexer) matchKeyword(keyword string) bool {
-	size := len(keyword)
-
-	if !l.match(keyword) {
-		return false
-	}
-
-	start := l.buffer.Index
-	end := start + size
-
-	prev := l.buffer.At(start - 1)
-	next := l.buffer.At(end)
-
-	return !l.isIdentifierPart(prev) && !l.isIdentifierPart(next)
-}
-
 func (l *Lexer) isLetter(ch rune) bool {
 	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
 }
@@ -270,6 +304,10 @@ func (l *Lexer) isDigit(ch rune) bool {
 
 func (l *Lexer) isWhitespace(ch rune) bool {
 	return ch == ' ' || ch == '\n' || ch == '\t'
+}
+
+func (l *Lexer) isNumberPart(ch rune) bool {
+	return l.isDigit(ch) || ch == '.'
 }
 
 func (l *Lexer) isIdentifierPart(ch rune) bool {

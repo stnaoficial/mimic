@@ -12,19 +12,23 @@ type Writer struct {
 	config *Config
 
 	entryMap EntryMap
+
+	debug bool
 }
 
-func NewWriter(config *Config) *Writer {
+func NewWriter(config *Config, debug bool) *Writer {
 	return &Writer{
 		config: config,
 
 		entryMap: make(EntryMap),
+
+		debug: debug,
 	}
 }
 
 func (w *Writer) Write(entryMap EntryMap) EntryMap {
 	for targetPath := range w.config.TargetPath.Values {
-		if w.config.DebugMode {
+		if w.debug {
 			cli.Logf(cli.LogSeverityWarn, "Writing files to directory %s ...\n", targetPath)
 		}
 
@@ -38,7 +42,7 @@ func (w *Writer) Write(entryMap EntryMap) EntryMap {
 	}
 
 	for pathName, entry := range w.entryMap {
-		if w.config.DebugMode {
+		if w.debug {
 			cli.Logf(cli.LogSeveritySuccess, "Wrote about %d bytes at %s\n", entry.Size, pathName)
 		}
 
@@ -55,7 +59,7 @@ func (w *Writer) Write(entryMap EntryMap) EntryMap {
 }
 
 func (w *Writer) writeDirectory(dirName string, entry Entry) {
-	if w.config.DebugMode {
+	if w.debug {
 		cli.Logf(cli.LogSeverityWarn, "Writing directory %s ...\n", dirName)
 	}
 
@@ -68,7 +72,7 @@ func (w *Writer) writeDirectory(dirName string, entry Entry) {
 }
 
 func (w *Writer) writeFile(fileName string, entry Entry) {
-	if w.config.DebugMode {
+	if w.debug {
 		cli.Logf(cli.LogSeverityWarn, "Writing file %s ...\n", fileName)
 	}
 
