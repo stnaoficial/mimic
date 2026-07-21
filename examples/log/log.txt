@@ -1,7 +1,0 @@
-Timestamp: 1782161077
-Severity: HIGH
-Description: Some high level log message...
-
-Timestamp: 1782161094
-Severity: LOW
-Description: Some low level log message...
