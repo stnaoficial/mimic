@@ -5,15 +5,16 @@
 - [Variables](#variables)
   - [Variable Syntax](#variable-syntax)
   - [Global Variables](#global-variables)
-    - [`__SOURCEPATH__`](#__targetpath__)
-    - [`__TARGETPATH__`](#__sourcepath__)
+    - [`__SOURCE_PATH__`](#__target_path__)
+    - [`__TARGET_PATH__`](#__source_path__)
 
   - [Local Variables](#local-variables)
-    - [`__BASEPATH__`](#__basepath__)
-    - [`__BASENAME__`](#__basename__)
+    - [`__COUNT__`](#__count__)
+    - [`__PREV_COUNT__`](#__prev_count__)
+    - [`__NEXT_COUNT__`](#__next_count__)
+    - [`__PATHNAME__`](#__pathname__)
     - [`__DIRNAME__`](#__dirname__)
-    - [`__FILENAME__`](#__filename__)
-    - [`__FILEDATA__`](#__filedata__)
+    - [`__BASENAME__`](#__basename__)
 
 - [Functions](#functions)
   - [Case formatters](#case-formatters)
@@ -38,8 +39,8 @@ Variables can be used in:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| [`__SOURCEPATH__`](#__sourcepath__) | Source entry. | `/usr/local` |
-| [`__TARGETPATH__`](#__targetpath__) | Target entry. | `/usr/local` |
+| [`__SOURCE_PATH__`](#__source_path__) | Source entry. | `/usr/local` |
+| [`__TARGET_PATH__`](#__target_path__) | Target entry. | `/usr/local` |
 
 ---
 
@@ -47,11 +48,12 @@ Variables can be used in:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| [`__BASEPATH__`](#__basepath__) | Parent path of the current entry. | `parent/child` |
+| [`__COUNT__`](#__count__) | Count of files in the current directory entry. | 0..9 |
+| [`__PREV_COUNT__`](#__prev_count__) | Previous count of files in the current directory entry. | 0..9 |
+| [`__NEXT_COUNT__`](#__next_count__) | Next count of files in the current directory entry. | 0..9 |
+| [`__PATHNAME__`](#__pathname__) | Full pathname of the current file entry. | `parent/child/file.ext` |
+| [`__DIRNAME__`](#__dirname__) | Full pathname of the current directory entry. | `parent/child` |
 | [`__BASENAME__`](#__basename__) | Last path component of the current entry. | `file.ext` |
-| [`__DIRNAME__`](#__dirname__) | Full pathname of the current directory entry. Available only for directories. | `parent/child` |
-| [`__FILENAME__`](#__filename__) | Full pathname of the current file entry. Available only for files. | `parent/child/file.ext` |
-| [`__FILEDATA__`](#__filedata__) | Raw file contents. Available only for files. | |
 
 ## Functions
 

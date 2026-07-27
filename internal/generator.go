@@ -41,32 +41,34 @@ func NewGenerator(config *Config, debug bool, strict bool) *Generator {
 }
 
 func (g *Generator) defineGlobalVars() {
-	g.comp.Env.Vars["__SOURCEPATH__"] = g.config.SourcePath.String()
-	g.comp.Env.Vars["__TARGETPATH__"] = g.config.TargetPath.String()
+	g.comp.Env.Vars["__SOURCE_PATH__"] = g.config.SourcePath.String()
+	g.comp.Env.Vars["__TARGET_PATH__"] = g.config.TargetPath.String()
 }
 
 func (g *Generator) defineLocalVars(pathName string, entry Entry) {
 	dirName := filepath.Dir(pathName)
 
-	if entries, err := os.ReadDir(dirName); err != nil {
-		g.comp.Env.Vars["__COUNT__"] = "0"
-	} else {
-		g.comp.Env.Vars["__COUNT__"] = strconv.Itoa(len(entries))
+	count := 0
+
+	if entries, err := os.ReadDir(dirName); err == nil {
+		count = len(entries)
 	}
 
-	g.comp.Env.Vars["__BASEPATH__"] = filepath.Dir(pathName)
+	prevCount := count - 1
+
+	if prevCount <= 0 {
+		prevCount = 0
+	}
+
+	nextCount := count + 1
+
+	g.comp.Env.Vars["__COUNT__"] = strconv.Itoa(count)
+	g.comp.Env.Vars["__PREV_COUNT__"] = strconv.Itoa(prevCount)
+	g.comp.Env.Vars["__NEXT_COUNT__"] = strconv.Itoa(nextCount)
+
+	g.comp.Env.Vars["__PATHNAME__"] = pathName
+	g.comp.Env.Vars["__DIRNAME__"] = filepath.Dir(pathName)
 	g.comp.Env.Vars["__BASENAME__"] = filepath.Base(pathName)
-
-	delete(g.comp.Env.Vars, "__DIRNAME__")
-	delete(g.comp.Env.Vars, "__FILENAME__")
-	delete(g.comp.Env.Vars, "__FILEDATA__")
-
-	if entry.Info.IsDir() {
-		g.comp.Env.Vars["__DIRNAME__"] = pathName
-	} else {
-		g.comp.Env.Vars["__FILENAME__"] = pathName
-		g.comp.Env.Vars["__FILEDATA__"] = string(entry.Data)
-	}
 }
 
 func (g *Generator) Generate(entryMap EntryMap) EntryMap {
