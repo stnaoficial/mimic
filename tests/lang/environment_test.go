@@ -47,13 +47,13 @@ func Test_MustCompilePadRightCallable(t *testing.T) {
 func Test_MustCompilePadCallable(t *testing.T) {
 	comp := lang.NewCompiler(true)
 
-	result1, err := comp.Compile(lang.NewBuffer("<test>", "{{ pad(1, 3, '-') }}"))
+	result1, err := comp.Compile(lang.NewBuffer("<test>", "{{ pad_both(1, 3, '-') }}"))
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	result2, err := comp.Compile(lang.NewBuffer("<test>", "{{ pad('1', 3, '-') }}"))
+	result2, err := comp.Compile(lang.NewBuffer("<test>", "{{ pad_both('1', 3, '-') }}"))
 
 	if err != nil {
 		t.Error(err)
