@@ -15,7 +15,7 @@ func (m *FlagMap) Set(value string) error {
 	parts := strings.SplitN(value, "=", 2)
 
 	if len(parts) != 2 {
-		return fmt.Errorf("invalid format, expected key=value")
+		return fmt.Errorf("Invalid format, expected key=value")
 	}
 
 	key := strings.TrimSpace(parts[0])
