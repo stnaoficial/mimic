@@ -53,7 +53,7 @@ func registerDefaultFuncs() map[string]Function {
 					if givenVal.Type().ConvertibleTo(expectedType) {
 						givenVal = givenVal.Convert(expectedType)
 					} else {
-						return nil, fmt.Errorf("Function %s arg [%d] error: expected type %s, got %s", protoName, i, expectedType, givenVal.Type())
+						return nil, fmt.Errorf("Function %s expected argument %d type to be %s, but got %s", protoName, i, expectedType, givenVal.Type())
 					}
 				}
 
@@ -79,9 +79,9 @@ func registerDefaultFuncs() map[string]Function {
 					return val, err
 				}
 
-				return val, fmt.Errorf("Unknown second return error type: %v", errVal)
+				return val, fmt.Errorf("Unknown second return error type")
 			default:
-				return nil, fmt.Errorf("Unsupported multiple return counts (%d) for function %s", len(results), protoName)
+				return nil, fmt.Errorf("Unsupported multiple return counts for function %s", protoName)
 			}
 		}
 	}

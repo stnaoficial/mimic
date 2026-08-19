@@ -294,8 +294,16 @@ func (l *Lexer) match(str string) bool {
 	return true
 }
 
+func (l *Lexer) isLowerCaseLetter(ch rune) bool {
+	return (ch >= 'a' && ch <= 'z')
+}
+
+func (l *Lexer) isUpperCaseLetter(ch rune) bool {
+	return (ch >= 'A' && ch <= 'Z')
+}
+
 func (l *Lexer) isLetter(ch rune) bool {
-	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+	return l.isLowerCaseLetter(ch) || l.isUpperCaseLetter(ch)
 }
 
 func (l *Lexer) isDigit(ch rune) bool {
