@@ -9,17 +9,13 @@ import (
 )
 
 type Writer struct {
-	config *Config
-
 	entryMap EntryMap
 
 	debug bool
 }
 
-func NewWriter(config *Config, debug bool) *Writer {
+func NewWriter(debug bool) *Writer {
 	return &Writer{
-		config: config,
-
 		entryMap: make(EntryMap),
 
 		debug: debug,
@@ -27,17 +23,11 @@ func NewWriter(config *Config, debug bool) *Writer {
 }
 
 func (w *Writer) Write(entryMap EntryMap) EntryMap {
-	for targetPath := range w.config.TargetPath.Values {
-		if w.debug {
-			cli.Logf(cli.LogSeverityWarn, "Writing files to directory %s ...\n", targetPath)
-		}
-
-		for pathName, entry := range entryMap {
-			if entry.IsDir() {
-				w.writeDirectory(pathName, entry)
-			} else {
-				w.writeFile(pathName, entry)
-			}
+	for pathName, entry := range entryMap {
+		if entry.IsDir() {
+			w.writeDirectory(pathName, entry)
+		} else {
+			w.writeFile(pathName, entry)
 		}
 	}
 

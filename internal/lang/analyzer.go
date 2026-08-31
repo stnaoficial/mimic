@@ -1,48 +1,48 @@
 package lang
 
-type Dumper struct {
+type Analyzer struct {
 	Env  *Environment
 	expr *Expression
 }
 
-type Dump any
+type Analisys any
 
-type VariableDump struct {
+type VariableAnalisys struct {
 	Name  string
 	Value string
 	Ok    bool
 }
 
-type DumpMap = map[string]Dump
+type AnalisysMap = map[string]Analisys
 
-func NewVariableDump(name string, value string, ok bool) VariableDump {
-	return VariableDump{
+func NewVariableAnalisys(name string, value string, ok bool) VariableAnalisys {
+	return VariableAnalisys{
 		Name:  name,
 		Value: value,
 		Ok:    ok,
 	}
 }
 
-func NewDumper() *Dumper {
+func NewAnalyzer() *Analyzer {
 	env := NewEnvironment()
 
-	return &Dumper{
+	return &Analyzer{
 		Env:  env,
 		expr: NewExpressionConfigurable(DefaultOpenExpr, DefaultCloseExpr),
 	}
 }
 
-func NewDumperConfigurable(env *Environment, expr *Expression) *Dumper {
-	return &Dumper{
+func NewAnalyzerConfigurable(env *Environment, expr *Expression) *Analyzer {
+	return &Analyzer{
 		Env:  env,
 		expr: expr,
 	}
 }
 
-func (d *Dumper) Dump(buffer *Buffer) (DumpMap, error) {
+func (d *Analyzer) Analyze(buffer *Buffer) (AnalisysMap, error) {
 	lexer := NewLexer(buffer, d.expr)
 
-	dumpMap := make(DumpMap)
+	analisysMap := make(AnalisysMap)
 
 	for {
 		token, err := lexer.Next()
@@ -68,31 +68,31 @@ func (d *Dumper) Dump(buffer *Buffer) (DumpMap, error) {
 				return nil, err
 			}
 
-			d.dump(dumpMap, node)
+			d.analyze(analisysMap, node)
 		}
 	}
 
-	return dumpMap, nil
+	return analisysMap, nil
 }
 
-func (d *Dumper) dump(dumpMap DumpMap, node Node) {
+func (d *Analyzer) analyze(analisysMap AnalisysMap, node Node) {
 	switch n := node.(type) {
 	case Identifier:
 		name := n.Name
 		value, ok := d.Env.Vars[name]
 
-		dumpMap[name] = NewVariableDump(name, value, ok)
+		analisysMap[name] = NewVariableAnalisys(name, value, ok)
 
 	case Unary:
-		d.dump(dumpMap, n.Value)
+		d.analyze(analisysMap, n.Value)
 
 	case Binary:
-		d.dump(dumpMap, n.Left)
-		d.dump(dumpMap, n.Right)
+		d.analyze(analisysMap, n.Left)
+		d.analyze(analisysMap, n.Right)
 
 	case Callable:
 		for _, arg := range n.Args {
-			d.dump(dumpMap, arg)
+			d.analyze(analisysMap, arg)
 		}
 	}
 }

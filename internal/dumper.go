@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"maps"
 	"mimic/internal/cli"
 	"mimic/internal/lang"
@@ -10,76 +9,49 @@ import (
 )
 
 type Dumper struct {
-	config *Config
-	dumper *lang.Dumper
-
-	dumpMap lang.DumpMap
+	analyzer *lang.Analyzer
 
 	debug bool
 }
 
-func NewDumper(config *Config, debug bool) *Dumper {
-	env := lang.NewEnvironment()
-	maps.Copy(env.Vars, config.Variables)
-	maps.Copy(env.Prompts, config.Prompts)
-
-	expr := lang.NewExpressionConfigurable(config.ExprOpen, config.ExprClose)
-
-	dumper := lang.NewDumperConfigurable(env, expr)
-
+func NewDumper(analyzer *lang.Analyzer, debug bool) *Dumper {
 	return &Dumper{
-		config: config,
-		dumper: dumper,
-
-		dumpMap: make(lang.DumpMap),
+		analyzer: analyzer,
 
 		debug: debug,
 	}
 }
 
-func (d *Dumper) Dump(entryMap EntryMap) lang.DumpMap {
-	d.dumpMap = make(lang.DumpMap)
+func (d *Dumper) Dump(inputEntryMap EntryMap) lang.AnalisysMap {
+	outputAnalisysMap := make(lang.AnalisysMap)
 
-	for _, targetPath := range d.config.TargetPath.Values {
-		if d.debug {
-			cli.Logf(cli.LogSeverityWarn, "Dumping files for directory %s ...\n", targetPath)
+	for pathName, entry := range inputEntryMap {
+		analisysMap, err := d.analyzer.Analyze(lang.NewBuffer("<pathname>", pathName))
+
+		if err != nil {
+			cli.Logln(cli.LogSeverityError, err.Error())
+			os.Exit(0)
 		}
 
-		for pathName, entry := range entryMap {
-			dumpMap, err := d.dumper.Dump(lang.NewBuffer("<pathname>", pathName))
+		maps.Copy(outputAnalisysMap, analisysMap)
 
-			if err != nil {
-				cli.Logln(cli.LogSeverityError, err.Error())
-				os.Exit(0)
-			}
-
-			maps.Copy(d.dumpMap, dumpMap)
-
-			if entry.IsDir() {
-				d.dumpDirectory(pathName, entry)
-			} else {
-				d.dumpFile(pathName, entry)
-			}
+		if entry.IsDir() {
+			d.dumpDirectory(outputAnalisysMap, pathName, entry)
+		} else {
+			d.dumpFile(outputAnalisysMap, pathName, entry)
 		}
 	}
 
-	for _, dump := range d.dumpMap {
-		switch dp := dump.(type) {
-		case lang.VariableDump:
-			fmt.Printf("%s: %s\n", dp.Name, dp.Value)
-		}
-	}
-
-	return d.dumpMap
+	return outputAnalisysMap
 }
 
-func (d *Dumper) dumpDirectory(dirName string, entry Entry) {
+func (d *Dumper) dumpDirectory(_ lang.AnalisysMap, dirName string, entry Entry) {
 	if d.debug {
 		cli.Logf(cli.LogSeverityWarn, "Dumping directory %s ...\n", dirName)
 	}
 }
 
-func (d *Dumper) dumpFile(fileName string, entry Entry) {
+func (d *Dumper) dumpFile(outputAnalisysMap lang.AnalisysMap, fileName string, entry Entry) {
 	before, isCompilable := strings.CutSuffix(fileName, ".mimic")
 
 	if isCompilable {
@@ -91,13 +63,13 @@ func (d *Dumper) dumpFile(fileName string, entry Entry) {
 	}
 
 	if isCompilable {
-		dumpMap, err := d.dumper.Dump(lang.NewBuffer(fileName, string(entry.Data)))
+		analisysMap, err := d.analyzer.Analyze(lang.NewBuffer(fileName, string(entry.Data)))
 
 		if err != nil {
 			cli.Logln(cli.LogSeverityError, err.Error())
 			os.Exit(0)
 		}
 
-		maps.Copy(d.dumpMap, dumpMap)
+		maps.Copy(outputAnalisysMap, analisysMap)
 	}
 }

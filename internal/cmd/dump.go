@@ -4,8 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"maps"
 	"mimic/internal"
 	"mimic/internal/lang"
+	"mimic/internal/util"
 	"os"
 )
 
@@ -39,7 +41,14 @@ func DumpCommandUsage() {
 }
 
 type DumpCommandConfig struct {
-	*internal.Config
+	SourcePath util.FlagSlice
+	TargetPath util.FlagSlice
+
+	Variables util.FlagMap
+	Prompts   util.FlagMap
+
+	ExprOpen  string
+	ExprClose string
 
 	DebugMode bool
 }
@@ -52,14 +61,18 @@ type DumpCommand struct {
 
 func NewDumpCommandConfig() *DumpCommandConfig {
 	return &DumpCommandConfig{
-		Config: internal.NewConfig(),
+		SourcePath: util.NewFlagSlice(".mimic"),
+		TargetPath: util.NewFlagSlice("."),
+
+		Variables: make(util.FlagMap),
+		Prompts:   make(util.FlagMap),
 	}
 }
 
 func NewDumpCommand() *DumpCommand {
 	config := NewDumpCommandConfig()
 
-	flagSet := flag.NewFlagSet("Dump", flag.ExitOnError)
+	flagSet := flag.NewFlagSet("dump", flag.ExitOnError)
 	flagSet.SetOutput(io.Discard)
 
 	flagSet.Usage = DumpCommandUsage
@@ -88,7 +101,24 @@ func NewDumpCommand() *DumpCommand {
 func (c *DumpCommand) Run(args []string) {
 	c.FlagSet.Parse(args)
 
-	filesRead := internal.NewScanner(c.config.Config, c.config.DebugMode).Scan()
+	scanner := internal.NewScanner(c.config.DebugMode)
+	filesRead := scanner.Scan(c.config.SourcePath.Values)
 
-	internal.NewDumper(c.config.Config, c.config.DebugMode).Dump(filesRead)
+	env := lang.NewEnvironment()
+	maps.Copy(env.Vars, c.config.Variables)
+	maps.Copy(env.Prompts, c.config.Prompts)
+
+	expr := lang.NewExpressionConfigurable(c.config.ExprOpen, c.config.ExprClose)
+
+	analyzer := lang.NewAnalyzerConfigurable(env, expr)
+
+	dumper := internal.NewDumper(analyzer, c.config.DebugMode)
+	analisysResultMap := dumper.Dump(filesRead)
+
+	for _, dump := range analisysResultMap {
+		switch dp := dump.(type) {
+		case lang.VariableAnalisys:
+			fmt.Printf("%s: %s\n", dp.Name, dp.Value)
+		}
+	}
 }

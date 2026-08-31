@@ -4,9 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"maps"
 	"mimic/internal"
 	"mimic/internal/cli"
 	"mimic/internal/lang"
+	"mimic/internal/util"
 	"os"
 )
 
@@ -44,7 +46,14 @@ func CopyCommandUsage() {
 }
 
 type CopyCommandConfig struct {
-	*internal.Config
+	SourcePath util.FlagSlice
+	TargetPath util.FlagSlice
+
+	Variables util.FlagMap
+	Prompts   util.FlagMap
+
+	ExprOpen  string
+	ExprClose string
 
 	DebugMode  bool
 	StrictMode bool
@@ -58,7 +67,11 @@ type CopyCommand struct {
 
 func NewCopyCommandConfig() *CopyCommandConfig {
 	return &CopyCommandConfig{
-		Config: internal.NewConfig(),
+		SourcePath: util.NewFlagSlice(".mimic"),
+		TargetPath: util.NewFlagSlice("."),
+
+		Variables: make(util.FlagMap),
+		Prompts:   make(util.FlagMap),
 	}
 }
 
@@ -98,13 +111,23 @@ func NewCopyCommand() *CopyCommand {
 func (c *CopyCommand) Run(args []string) {
 	c.FlagSet.Parse(args)
 
-	filesRead := internal.NewScanner(c.config.Config, c.config.DebugMode).Scan()
+	scanner := internal.NewScanner(c.config.DebugMode)
+	filesRead := scanner.Scan(c.config.SourcePath.Values)
 
-	filesGenerated := internal.NewGenerator(c.config.Config, c.config.DebugMode, c.config.StrictMode).Generate(filesRead)
+	env := lang.NewEnvironment()
+	maps.Copy(env.Vars, c.config.Variables)
+	maps.Copy(env.Prompts, c.config.Prompts)
+
+	expr := lang.NewExpressionConfigurable(c.config.ExprOpen, c.config.ExprClose)
+	comp := lang.NewCompilerConfigurable(env, expr, c.config.StrictMode)
+
+	generator := internal.NewGenerator(comp, c.config.DebugMode)
+	filesGenerated := generator.Generate(c.config.TargetPath.Values, filesRead)
 
 	if !cli.Confirm("Do you want to continue [Y/n]? ") {
 		os.Exit(0)
 	}
 
-	internal.NewWriter(c.config.Config, c.config.DebugMode).Write(filesGenerated)
+	writer := internal.NewWriter(c.config.DebugMode)
+	writer.Write(filesGenerated)
 }

@@ -138,13 +138,7 @@ func (e *Evaluator) Eval(node Node) (any, error) {
 			}
 		}
 
-		value, err := fn(args)
-
-		if err != nil {
-			return nil, fmt.Errorf("Usage: %s", err)
-		}
-
-		return value, nil
+		return fn(args)
 	}
 
 	return "", nil

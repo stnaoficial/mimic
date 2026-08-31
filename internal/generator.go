@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"maps"
 	"mimic/internal/cli"
 	"mimic/internal/lang"
 	"os"
@@ -11,38 +10,22 @@ import (
 )
 
 type Generator struct {
-	config *Config
-	comp   *lang.Compiler
+	comp *lang.Compiler
 
-	entryMap EntryMap
-
-	debug  bool
-	strict bool
+	debug bool
 }
 
-func NewGenerator(config *Config, debug bool, strict bool) *Generator {
-	env := lang.NewEnvironment()
-	maps.Copy(env.Vars, config.Variables)
-	maps.Copy(env.Prompts, config.Prompts)
-
-	expr := lang.NewExpressionConfigurable(config.ExprOpen, config.ExprClose)
-
-	comp := lang.NewCompilerConfigurable(env, expr, strict)
-
+func NewGenerator(comp *lang.Compiler, debug bool) *Generator {
 	return &Generator{
-		config: config,
-		comp:   comp,
+		comp: comp,
 
-		entryMap: make(EntryMap),
-
-		debug:  debug,
-		strict: strict,
+		debug: debug,
 	}
 }
 
 func (g *Generator) defineGlobalVars() {
-	g.comp.Env.Vars["__SOURCE_PATH__"] = g.config.SourcePath.String()
-	g.comp.Env.Vars["__TARGET_PATH__"] = g.config.TargetPath.String()
+	// g.comp.Env.Vars["__SOURCE_PATH__"] = g.config.SourcePath.String()
+	// g.comp.Env.Vars["__TARGET_PATH__"] = g.config.TargetPath.String()
 }
 
 func (g *Generator) defineLocalVars(pathName string, entry Entry) {
@@ -71,17 +54,17 @@ func (g *Generator) defineLocalVars(pathName string, entry Entry) {
 	g.comp.Env.Vars["__BASENAME__"] = filepath.Base(pathName)
 }
 
-func (g *Generator) Generate(entryMap EntryMap) EntryMap {
-	g.entryMap = make(EntryMap)
+func (g *Generator) Generate(targetPaths []string, inputEntryMap EntryMap) EntryMap {
+	outputEntryMap := make(EntryMap)
 
 	g.defineGlobalVars()
 
-	for _, targetPath := range g.config.TargetPath.Values {
+	for _, targetPath := range targetPaths {
 		if g.debug {
 			cli.Logf(cli.LogSeverityWarn, "Generating files for directory %s ...\n", targetPath)
 		}
 
-		for pathName, entry := range entryMap {
+		for pathName, entry := range inputEntryMap {
 			g.defineLocalVars(pathName, entry)
 
 			result, err := g.comp.Compile(lang.NewBuffer("<pathname>", pathName))
@@ -94,25 +77,25 @@ func (g *Generator) Generate(entryMap EntryMap) EntryMap {
 			pathName = filepath.Join(targetPath, result)
 
 			if entry.IsDir() {
-				g.generateDirectory(pathName, entry)
+				g.generateDirectory(outputEntryMap, pathName, entry)
 			} else {
-				g.generateFile(pathName, entry)
+				g.generateFile(outputEntryMap, pathName, entry)
 			}
 		}
 	}
 
-	return g.entryMap
+	return outputEntryMap
 }
 
-func (g *Generator) generateDirectory(dirName string, entry Entry) {
+func (g *Generator) generateDirectory(outputEntryMap EntryMap, dirName string, entry Entry) {
 	if g.debug {
 		cli.Logf(cli.LogSeverityWarn, "Generating directory %s ...\n", dirName)
 	}
 
-	g.entryMap[dirName] = entry
+	outputEntryMap[dirName] = entry
 }
 
-func (g *Generator) generateFile(fileName string, entry Entry) {
+func (g *Generator) generateFile(outputEntryMap EntryMap, fileName string, entry Entry) {
 	before, isCompilable := strings.CutSuffix(fileName, ".mimic")
 
 	if isCompilable {
@@ -134,5 +117,5 @@ func (g *Generator) generateFile(fileName string, entry Entry) {
 		entry.Data = []byte(result)
 	}
 
-	g.entryMap[fileName] = entry
+	outputEntryMap[fileName] = entry
 }

@@ -1,27 +1,115 @@
 package lang
 
 import (
+	"fmt"
 	"mimic/internal/util"
+	"reflect"
 	"strings"
 	"unicode"
 )
 
-var Registry = make(map[string]any)
+type RegistryManager struct {
+	entries map[string]any
+}
+
+func newRegistryManager() *RegistryManager {
+	return &RegistryManager{
+		entries: make(map[string]any),
+	}
+}
+
+func (r *RegistryManager) Register(abstract string, concrete any) {
+	r.entries[abstract] = concrete
+}
+
+func (r *RegistryManager) Assign(env *Environment) {
+	for abstract, concrete := range r.entries {
+		concreteType := reflect.TypeOf(concrete)
+		concreteValue := reflect.ValueOf(concrete)
+
+		switch concreteValue.Kind() {
+		case reflect.Func:
+			r.assignFunction(env, abstract, concrete, concreteType, concreteValue)
+		}
+	}
+}
+
+func (r *RegistryManager) assignFunction(
+	env *Environment,
+	abstract string,
+	concrete any,
+	concreteType reflect.Type,
+	concreteValue reflect.Value,
+) {
+	env.Funcs[abstract] = func(args []any) (any, error) {
+		if concreteValue.Kind() != reflect.Func {
+			return nil, fmt.Errorf("%s is registered but is not a function", abstract)
+		}
+
+		if len(args) != concreteType.NumIn() {
+			return nil, fmt.Errorf("Function %s expects %d arguments, but got %d", abstract, concreteType.NumIn(), len(args))
+		}
+
+		reflectArgs := make([]reflect.Value, len(args))
+
+		for i := 0; i < len(args); i++ {
+			expectedType := concreteType.In(i)
+
+			givenVal := reflect.ValueOf(args[i])
+
+			if !givenVal.IsValid() {
+				reflectArgs[i] = reflect.Zero(expectedType)
+				continue
+			}
+
+			if givenVal.Type() != expectedType {
+				if givenVal.Type().ConvertibleTo(expectedType) {
+					givenVal = givenVal.Convert(expectedType)
+				} else {
+					return nil, fmt.Errorf("Function %s expected argument %d type to be %s, but got %s", abstract, i, expectedType, givenVal.Type())
+				}
+			}
+
+			reflectArgs[i] = givenVal
+		}
+
+		results := concreteValue.Call(reflectArgs)
+
+		if len(results) < 2 {
+			return nil, fmt.Errorf("Function %s error return is missing", abstract)
+		}
+
+		val := results[0].Interface()
+		err := results[1].Interface()
+
+		if err == nil {
+			return val, nil
+		}
+
+		if err, ok := err.(error); ok {
+			return val, err
+		}
+
+		return val, fmt.Errorf("Second return type must be an error")
+	}
+}
+
+var Registry = newRegistryManager()
 
 func init() {
-	Registry["upper"] = func(s string) string {
-		return strings.ToUpper(s)
-	}
+	Registry.Register("upper", func(s string) (string, error) {
+		return strings.ToUpper(s), nil
+	})
 
-	Registry["lower"] = func(s string) string {
-		return strings.ToLower(s)
-	}
+	Registry.Register("lower", func(s string) (string, error) {
+		return strings.ToLower(s), nil
+	})
 
-	Registry["proper"] = func(s string) string {
+	Registry.Register("proper", func(s string) (string, error) {
 		tokens := strings.Fields(strings.ToLower(s))
 
 		if len(tokens) == 0 {
-			return ""
+			return "", nil
 		}
 
 		for i := range tokens {
@@ -32,14 +120,14 @@ func init() {
 			tokens[i] = string(runes)
 		}
 
-		return strings.Join(tokens, " ")
-	}
+		return strings.Join(tokens, " "), nil
+	})
 
-	Registry["title"] = func(s string) string {
+	Registry.Register("title", func(s string) (string, error) {
 		tokens := strings.Fields(strings.ToLower(s))
 
 		if len(tokens) == 0 {
-			return ""
+			return "", nil
 		}
 
 		for i := range tokens {
@@ -52,26 +140,26 @@ func init() {
 			tokens[i] = string(runes)
 		}
 
-		return strings.Join(tokens, " ")
-	}
+		return strings.Join(tokens, " "), nil
+	})
 
-	Registry["capitalize"] = func(s string) string {
+	Registry.Register("capitalize", func(s string) (string, error) {
 		if s == "" {
-			return ""
+			return "", nil
 		}
 
 		runes := []rune(strings.ToLower(s))
 
 		runes[0] = unicode.ToUpper(runes[0])
 
-		return string(runes)
-	}
+		return string(runes), nil
+	})
 
-	Registry["pascal"] = func(s string) string {
+	Registry.Register("pascal", func(s string) (string, error) {
 		tokens := strings.Fields(strings.ToLower(util.Normalize(s)))
 
 		if len(tokens) == 0 {
-			return ""
+			return "", nil
 		}
 
 		var builder strings.Builder
@@ -84,14 +172,14 @@ func init() {
 			builder.WriteString(string(runes))
 		}
 
-		return builder.String()
-	}
+		return builder.String(), nil
+	})
 
-	Registry["camel"] = func(s string) string {
+	Registry.Register("camel", func(s string) (string, error) {
 		tokens := strings.Fields(strings.ToLower(util.Normalize(s)))
 
 		if len(tokens) == 0 {
-			return ""
+			return "", nil
 		}
 
 		var builder strings.Builder
@@ -106,46 +194,46 @@ func init() {
 			builder.WriteString(string(runes))
 		}
 
-		return builder.String()
-	}
+		return builder.String(), nil
+	})
 
-	Registry["flat"] = func(s string) string {
-		return strings.Join(strings.Fields(strings.ToLower(util.Normalize(s))), "")
-	}
+	Registry.Register("flat", func(s string) (string, error) {
+		return strings.Join(strings.Fields(strings.ToLower(util.Normalize(s))), ""), nil
+	})
 
-	Registry["snake"] = func(s string) string {
-		return util.Delimit(strings.ToLower(util.Normalize(s)), "_")
-	}
+	Registry.Register("snake", func(s string) (string, error) {
+		return util.Delimit(strings.ToLower(util.Normalize(s)), "_"), nil
+	})
 
-	Registry["kebab"] = func(s string) string {
-		return util.Delimit(strings.ToLower(util.Normalize(s)), "-")
-	}
+	Registry.Register("kebab", func(s string) (string, error) {
+		return util.Delimit(strings.ToLower(util.Normalize(s)), "-"), nil
+	})
 
-	Registry["before"] = func(value string, target string) string {
+	Registry.Register("before", func(value string, target string) (string, error) {
 		before, _, ok := strings.Cut(value, target)
 
 		if !ok {
-			return value
+			return value, nil
 		}
 
-		return before
-	}
+		return before, nil
+	})
 
-	Registry["after"] = func(value string, target string) string {
+	Registry.Register("after", func(value string, target string) (string, error) {
 		_, after, ok := strings.Cut(value, target)
 
 		if !ok {
-			return value
+			return value, nil
 		}
 
-		return after
-	}
+		return after, nil
+	})
 
-	Registry["between"] = func(value string, first string, last string) string {
+	Registry.Register("between", func(value string, first string, last string) (string, error) {
 		start := strings.Index(value, first)
 
 		if start == -1 {
-			return value
+			return value, nil
 		}
 
 		start += len(first)
@@ -153,41 +241,41 @@ func init() {
 		end := strings.Index(value[start:], last)
 
 		if end == -1 {
-			return value
+			return value, nil
 		}
 
-		return value[start : start+end]
-	}
+		return value[start : start+end], nil
+	})
 
-	Registry["replace"] = func(str, old, new string) string {
-		return strings.ReplaceAll(str, old, new)
-	}
+	Registry.Register("replace", func(str, old, new string) (string, error) {
+		return strings.ReplaceAll(str, old, new), nil
+	})
 
-	Registry["normalize"] = func(str string) string {
-		return util.Normalize(str)
-	}
+	Registry.Register("normalize", func(str string) (string, error) {
+		return util.Normalize(str), nil
+	})
 
-	Registry["delimit"] = func(str, del string) string {
-		return util.Delimit(str, del)
-	}
+	Registry.Register("delimit", func(str, del string) (string, error) {
+		return util.Delimit(str, del), nil
+	})
 
-	Registry["pad_left"] = func(value any, length int, pad string) (string, error) {
+	Registry.Register("pad_left", func(value any, length int, pad string) (string, error) {
 		str, err := util.StringValue(value)
 		return util.Pad(str, length, pad, util.PadLeft), err
-	}
+	})
 
-	Registry["pad_right"] = func(value any, length int, pad string) (string, error) {
+	Registry.Register("pad_right", func(value any, length int, pad string) (string, error) {
 		str, err := util.StringValue(value)
 		return util.Pad(str, length, pad, util.PadRight), err
-	}
+	})
 
-	Registry["pad_both"] = func(value any, length int, pad string) (string, error) {
+	Registry.Register("pad_both", func(value any, length int, pad string) (string, error) {
 		str, err := util.StringValue(value)
 		return util.Pad(str, length, pad, util.PadBoth), err
-	}
+	})
 
-	Registry["zero_fill"] = func(value any, length int) (string, error) {
+	Registry.Register("zero_fill", func(value any, length int) (string, error) {
 		str, err := util.StringValue(value)
 		return util.ZeroFill(str, length), err
-	}
+	})
 }
