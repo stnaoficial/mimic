@@ -26,6 +26,7 @@ const (
 	CopyCommandExprOpenFlagUsage  = "Set the open expression syntax (default \"{{\")"
 	CopyCommandExprCloseFlagUsage = "Set the close expression syntax (default \"}}\")"
 
+	CopyCommandNoAskFlagUsage      = "Disable the \"ask to confirm\" safety feature (default false)"
 	CopyCommandDebugModeFlagUsage  = "Enable debug mode (default false)"
 	CopyCommandStrictModeFlagUsage = "Enable strict mode (default false)"
 )
@@ -40,6 +41,7 @@ func CopyCommandUsage() {
 	fmt.Fprintf(os.Stderr, "  -p, --prompt    %s\n", CopyCommandVarPromptFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --expr-open     %s\n", CopyCommandExprOpenFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --expr-close    %s\n", CopyCommandExprCloseFlagUsage)
+	fmt.Fprintf(os.Stderr, "  --no-ask     	  %s\n", CopyCommandNoAskFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --debug     	  %s\n", CopyCommandDebugModeFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --strict     	  %s\n", CopyCommandStrictModeFlagUsage)
 	fmt.Fprintln(os.Stderr)
@@ -55,6 +57,7 @@ type CopyCommandConfig struct {
 	ExprOpen  string
 	ExprClose string
 
+	NoAsk      bool
 	DebugMode  bool
 	StrictMode bool
 }
@@ -98,6 +101,7 @@ func NewCopyCommand() *CopyCommand {
 	flagSet.StringVar(&config.ExprOpen, "expr-open", lang.DefaultOpenExpr, CopyCommandExprOpenFlagUsage)
 	flagSet.StringVar(&config.ExprClose, "expr-close", lang.DefaultCloseExpr, CopyCommandExprCloseFlagUsage)
 
+	flagSet.BoolVar(&config.NoAsk, "no-ask", false, CopyCommandNoAskFlagUsage)
 	flagSet.BoolVar(&config.DebugMode, "debug", false, CopyCommandDebugModeFlagUsage)
 	flagSet.BoolVar(&config.StrictMode, "strict", false, CopyCommandStrictModeFlagUsage)
 
@@ -124,7 +128,7 @@ func (c *CopyCommand) Run(args []string) {
 	generator := internal.NewGenerator(comp, c.config.DebugMode)
 	filesGenerated := generator.Generate(c.config.TargetPath.Values, filesRead)
 
-	if !cli.Confirm("Do you want to continue [Y/n]? ") {
+	if !c.config.NoAsk && !cli.Confirm("Do you want to continue [Y/n]? ") {
 		os.Exit(0)
 	}
 

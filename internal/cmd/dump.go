@@ -121,4 +121,6 @@ func (c *DumpCommand) Run(args []string) {
 			fmt.Printf("%s: %s\n", dp.Name, dp.Value)
 		}
 	}
+
+	fmt.Println()
 }
