@@ -1,8 +1,4 @@
-<h1 align="center">
-   <img src="./assets/icon.jpg" width="80px" height="80px" />
-   <br>
-   Mimic Templating Library
-</h1>
+# Mimic Templating Library
 
 ## Overview
 

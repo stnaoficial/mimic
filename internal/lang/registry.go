@@ -201,12 +201,12 @@ func init() {
 		return strings.Join(strings.Fields(strings.ToLower(util.Normalize(s))), ""), nil
 	})
 
-	Registry.Register("snake", func(s string) (string, error) {
-		return util.Delimit(strings.ToLower(util.Normalize(s)), "_"), nil
-	})
-
 	Registry.Register("kebab", func(s string) (string, error) {
 		return util.Delimit(strings.ToLower(util.Normalize(s)), "-"), nil
+	})
+
+	Registry.Register("snake", func(s string) (string, error) {
+		return util.Delimit(strings.ToLower(util.Normalize(s)), "_"), nil
 	})
 
 	Registry.Register("before", func(value string, target string) (string, error) {

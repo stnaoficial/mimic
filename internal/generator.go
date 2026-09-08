@@ -24,8 +24,7 @@ func NewGenerator(comp *lang.Compiler, debug bool) *Generator {
 }
 
 func (g *Generator) defineGlobalVars() {
-	// g.comp.Env.Vars["__SOURCE_PATH__"] = g.config.SourcePath.String()
-	// g.comp.Env.Vars["__TARGET_PATH__"] = g.config.TargetPath.String()
+	// TODO
 }
 
 func (g *Generator) defineLocalVars(pathName string, entry Entry) {
