@@ -113,14 +113,5 @@ func (c *DumpCommand) Run(args []string) {
 	analyzer := lang.NewAnalyzerConfigurable(env, expr)
 
 	dumper := internal.NewDumper(analyzer, c.config.DebugMode)
-	analisysResultMap := dumper.Dump(filesRead)
-
-	for _, dump := range analisysResultMap {
-		switch dp := dump.(type) {
-		case lang.VariableAnalisys:
-			fmt.Printf("%s: %s\n", dp.Name, dp.Value)
-		}
-	}
-
-	fmt.Println()
+	dumper.Dump(filesRead)
 }

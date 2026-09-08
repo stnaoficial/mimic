@@ -18,7 +18,7 @@ func NewScanner(debug bool) *Scanner {
 }
 
 func (s *Scanner) Scan(sourcePaths []string) EntryMap {
-	outputEntryMap := make(EntryMap)
+	entryMap := make(EntryMap)
 
 	for _, sourcePath := range sourcePaths {
 		if s.debug {
@@ -33,23 +33,23 @@ func (s *Scanner) Scan(sourcePaths []string) EntryMap {
 		}
 
 		if sourceInfo.IsDir() {
-			s.scanSourceDirectory(outputEntryMap, sourcePath, sourcePath)
+			s.scanSourceDirectory(entryMap, sourcePath, sourcePath)
 		} else {
-			s.scanSourceFile(outputEntryMap, filepath.Dir(sourcePath), sourcePath, sourceInfo)
+			s.scanSourceFile(entryMap, filepath.Dir(sourcePath), sourcePath, sourceInfo)
 		}
 	}
 
 	if s.debug {
-		for pathName, entry := range outputEntryMap {
+		for pathName, entry := range entryMap {
 			cli.Logf(cli.LogSeverityInfo, "Scanned about %d bytes from %s\n", entry.Size, pathName)
 		}
 	}
 
-	return outputEntryMap
+	return entryMap
 }
 
-func (s *Scanner) scanSourceDirectory(outputEntryMap EntryMap, basePath string, dirName string) {
-	entries, err := util.DirectoryWalk(dirName)
+func (s *Scanner) scanSourceDirectory(entryMap EntryMap, basePath string, dirName string) {
+	entries, err := util.FileSystemWalk(dirName)
 
 	if err != nil {
 		cli.Logf(cli.LogSeverityError, "Unable to walk into source directory %s\n", dirName)
@@ -62,15 +62,15 @@ func (s *Scanner) scanSourceDirectory(outputEntryMap EntryMap, basePath string, 
 	}
 
 	for _, entry := range entries {
-		s.scanEntry(outputEntryMap, basePath, entry)
+		s.scanEntry(entryMap, basePath, entry)
 	}
 }
 
-func (s *Scanner) scanSourceFile(outputEntryMap EntryMap, basePath string, fileName string, fileInfo os.FileInfo) {
-	s.scanEntry(outputEntryMap, basePath, util.DirectoryEntry{Path: fileName, Info: fileInfo})
+func (s *Scanner) scanSourceFile(entryMap EntryMap, basePath string, fileName string, fileInfo os.FileInfo) {
+	s.scanEntry(entryMap, basePath, util.FileSystemEntry{Path: fileName, Info: fileInfo})
 }
 
-func (s *Scanner) scanEntry(outputEntryMap EntryMap, basePath string, entry util.DirectoryEntry) {
+func (s *Scanner) scanEntry(entryMap EntryMap, basePath string, entry util.FileSystemEntry) {
 	if basePath == entry.Path {
 		return
 	}
@@ -83,21 +83,21 @@ func (s *Scanner) scanEntry(outputEntryMap EntryMap, basePath string, entry util
 	}
 
 	if entry.Info.IsDir() {
-		s.scanDirectoryEntry(outputEntryMap, relPath, entry)
+		s.scanDirectoryEntry(entryMap, relPath, entry)
 	} else {
-		s.scanFileEntry(outputEntryMap, relPath, entry)
+		s.scanFileEntry(entryMap, relPath, entry)
 	}
 }
 
-func (s *Scanner) scanDirectoryEntry(outputEntryMap EntryMap, relPath string, entry util.DirectoryEntry) {
+func (s *Scanner) scanDirectoryEntry(entryMap EntryMap, relPath string, entry util.FileSystemEntry) {
 	if s.debug {
 		cli.Logf(cli.LogSeverityWarn, "Scanning directory %s ...\n", relPath)
 	}
 
-	outputEntryMap[relPath] = NewDirectoryEntry(relPath, entry.Info)
+	entryMap[relPath] = NewDirectoryEntry(relPath, entry.Info)
 }
 
-func (s *Scanner) scanFileEntry(outputEntryMap EntryMap, relPath string, entry util.DirectoryEntry) {
+func (s *Scanner) scanFileEntry(entryMap EntryMap, relPath string, entry util.FileSystemEntry) {
 	fileName := entry.Path
 
 	if s.debug {
@@ -111,5 +111,5 @@ func (s *Scanner) scanFileEntry(outputEntryMap EntryMap, relPath string, entry u
 		os.Exit(1)
 	}
 
-	outputEntryMap[relPath] = NewFileEntry(relPath, entry.Info, fileData)
+	entryMap[relPath] = NewFileEntry(relPath, entry.Info, fileData)
 }

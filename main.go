@@ -19,9 +19,10 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... [COMMAND] [ARG]...\n")
 	fmt.Fprintf(os.Stderr, "Mimic interprets files and directories from a source path (.mimic directory by default) and generates copies in a target path (the current directory by default).\n")
 	fmt.Fprintf(os.Stderr, "\nCommands:\n")
-	fmt.Fprintf(os.Stderr, "  init    %s\n", cmd.InitCommandDescription)
-	fmt.Fprintf(os.Stderr, "  dump    %s\n", cmd.DumpCommandDescription)
-	fmt.Fprintf(os.Stderr, "  copy    %s\n", cmd.CopyCommandDescription)
+	fmt.Fprintf(os.Stderr, "  init        %s\n", cmd.InitCommandDescription)
+	fmt.Fprintf(os.Stderr, "  dump        %s\n", cmd.DumpCommandDescription)
+	fmt.Fprintf(os.Stderr, "  copy        %s\n", cmd.CopyCommandDescription)
+	fmt.Fprintf(os.Stderr, "  template    %s\n", cmd.TemplateCommandDescription)
 	fmt.Fprintf(os.Stderr, "\nOptions:\n")
 	fmt.Fprintf(os.Stderr, "  -h, --help    %s\n", helpFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --version     %s\n", printVersionFlagUsage)
@@ -62,6 +63,8 @@ func main() {
 		cmd.NewDumpCommand().Run(os.Args[2:])
 	case "copy":
 		cmd.NewCopyCommand().Run(os.Args[2:])
+	case "template":
+		cmd.NewTemplateCommand().Run(os.Args[2:])
 	default:
 		run(os.Args[1:])
 	}

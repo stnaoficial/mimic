@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"maps"
 	"mimic/internal/cli"
 	"mimic/internal/lang"
@@ -22,27 +23,36 @@ func NewDumper(analyzer *lang.Analyzer, debug bool) *Dumper {
 	}
 }
 
-func (d *Dumper) Dump(inputEntryMap EntryMap) lang.AnalisysMap {
-	outputAnalisysMap := make(lang.AnalisysMap)
+func (d *Dumper) Dump(entryMap EntryMap) lang.AnalisysMap {
+	analisysMap := make(lang.AnalisysMap)
 
-	for pathName, entry := range inputEntryMap {
-		analisysMap, err := d.analyzer.Analyze(lang.NewBuffer("<pathname>", pathName))
+	for pathName, entry := range entryMap {
+		newAnalisysMap, err := d.analyzer.Analyze(lang.NewBuffer("<pathname>", pathName))
 
 		if err != nil {
 			cli.Logln(cli.LogSeverityError, err.Error())
 			os.Exit(0)
 		}
 
-		maps.Copy(outputAnalisysMap, analisysMap)
+		maps.Copy(analisysMap, newAnalisysMap)
 
 		if entry.IsDir() {
-			d.dumpDirectory(outputAnalisysMap, pathName, entry)
+			d.dumpDirectory(analisysMap, pathName, entry)
 		} else {
-			d.dumpFile(outputAnalisysMap, pathName, entry)
+			d.dumpFile(analisysMap, pathName, entry)
 		}
 	}
 
-	return outputAnalisysMap
+	for _, analisys := range analisysMap {
+		switch dp := analisys.(type) {
+		case lang.VariableAnalisys:
+			fmt.Printf("%s: %s\n", dp.Name, dp.Value)
+		}
+	}
+
+	fmt.Println()
+
+	return analisysMap
 }
 
 func (d *Dumper) dumpDirectory(_ lang.AnalisysMap, dirName string, entry Entry) {
@@ -51,7 +61,7 @@ func (d *Dumper) dumpDirectory(_ lang.AnalisysMap, dirName string, entry Entry) 
 	}
 }
 
-func (d *Dumper) dumpFile(outputAnalisysMap lang.AnalisysMap, fileName string, entry Entry) {
+func (d *Dumper) dumpFile(analisysMap lang.AnalisysMap, fileName string, entry Entry) {
 	before, isCompilable := strings.CutSuffix(fileName, ".mimic")
 
 	if isCompilable {
@@ -63,13 +73,13 @@ func (d *Dumper) dumpFile(outputAnalisysMap lang.AnalisysMap, fileName string, e
 	}
 
 	if isCompilable {
-		analisysMap, err := d.analyzer.Analyze(lang.NewBuffer(fileName, string(entry.Data)))
+		newAnalisysMap, err := d.analyzer.Analyze(lang.NewBuffer(fileName, string(entry.Data)))
 
 		if err != nil {
 			cli.Logln(cli.LogSeverityError, err.Error())
 			os.Exit(0)
 		}
 
-		maps.Copy(outputAnalisysMap, analisysMap)
+		maps.Copy(analisysMap, newAnalisysMap)
 	}
 }

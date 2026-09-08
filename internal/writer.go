@@ -8,17 +8,26 @@ import (
 	"strings"
 )
 
+type WriteMode int
+
+const (
+	WriteModeOverride WriteMode = iota
+	WriteModeAppend
+)
+
 type Writer struct {
 	entryMap EntryMap
 
 	debug bool
+	mode  WriteMode
 }
 
-func NewWriter(debug bool) *Writer {
+func NewWriter(debug bool, mode WriteMode) *Writer {
 	return &Writer{
 		entryMap: make(EntryMap),
 
 		debug: debug,
+		mode:  mode,
 	}
 }
 
@@ -79,7 +88,12 @@ func (w *Writer) writeFile(fileName string, entry Entry) {
 		data = fileData
 	}
 
-	data = append(data, entry.Data...)
+	switch w.mode {
+	case WriteModeAppend:
+		data = append(data, entry.Data...)
+	case WriteModeOverride:
+		data = entry.Data
+	}
 
 	if err := os.WriteFile(fileName, data, 0644); err != nil {
 		cli.Logf(cli.LogSeverityError, "Unable to write file %s\n", fileName)

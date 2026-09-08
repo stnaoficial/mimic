@@ -37,13 +37,13 @@ If a variable is not provided via CLI, Mimic will prompt:
 ```
 
 ```bash
-$ Please enter a value for "name": Some name or description
+$ Please enter a value for "name": My variable name
 ```
 
-This will be evaluated as something like:
+This will be evaluated as:
 
 ```txt
-SomeNameOrDescription
+MyVariableName
 ```
 
 ## Non-Interactive Mode

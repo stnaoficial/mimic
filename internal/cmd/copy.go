@@ -29,6 +29,7 @@ const (
 	CopyCommandNoAskFlagUsage      = "Disable the \"ask to confirm\" safety feature (default false)"
 	CopyCommandDebugModeFlagUsage  = "Enable debug mode (default false)"
 	CopyCommandStrictModeFlagUsage = "Enable strict mode (default false)"
+	CopyCommandWriteModeFlagUsage  = "Set the write mode 0=override, 1=append) (default 0)"
 )
 
 func CopyCommandUsage() {
@@ -44,6 +45,7 @@ func CopyCommandUsage() {
 	fmt.Fprintf(os.Stderr, "  --no-ask     	  %s\n", CopyCommandNoAskFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --debug     	  %s\n", CopyCommandDebugModeFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --strict     	  %s\n", CopyCommandStrictModeFlagUsage)
+	fmt.Fprintf(os.Stderr, "  --mode     	  %s\n", CopyCommandWriteModeFlagUsage)
 	fmt.Fprintln(os.Stderr)
 }
 
@@ -60,6 +62,7 @@ type CopyCommandConfig struct {
 	NoAsk      bool
 	DebugMode  bool
 	StrictMode bool
+	WriteMode  int
 }
 
 type CopyCommand struct {
@@ -104,6 +107,7 @@ func NewCopyCommand() *CopyCommand {
 	flagSet.BoolVar(&config.NoAsk, "no-ask", false, CopyCommandNoAskFlagUsage)
 	flagSet.BoolVar(&config.DebugMode, "debug", false, CopyCommandDebugModeFlagUsage)
 	flagSet.BoolVar(&config.StrictMode, "strict", false, CopyCommandStrictModeFlagUsage)
+	flagSet.IntVar(&config.WriteMode, "mode", 0, CopyCommandWriteModeFlagUsage)
 
 	return &CopyCommand{
 		FlagSet: flagSet,
@@ -132,6 +136,6 @@ func (c *CopyCommand) Run(args []string) {
 		os.Exit(0)
 	}
 
-	writer := internal.NewWriter(c.config.DebugMode)
+	writer := internal.NewWriter(c.config.DebugMode, internal.WriteMode(c.config.WriteMode))
 	writer.Write(filesGenerated)
 }

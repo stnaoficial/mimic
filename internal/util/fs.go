@@ -6,13 +6,13 @@ import (
 	"path/filepath"
 )
 
-type DirectoryEntry struct {
+type FileSystemEntry struct {
 	Path string
 	Info os.FileInfo
 }
 
-func DirectoryWalk(root string) ([]DirectoryEntry, error) {
-	var entries []DirectoryEntry
+func FileSystemWalk(root string) ([]FileSystemEntry, error) {
+	var entries []FileSystemEntry
 
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -29,7 +29,7 @@ func DirectoryWalk(root string) ([]DirectoryEntry, error) {
 			return err
 		}
 
-		entries = append(entries, DirectoryEntry{Path: path, Info: fileInfo})
+		entries = append(entries, FileSystemEntry{Path: path, Info: fileInfo})
 
 		return nil
 	})
@@ -51,7 +51,7 @@ func DirectoryWalk(root string) ([]DirectoryEntry, error) {
 		hasChildren[parent] = true
 	}
 
-	var result []DirectoryEntry
+	var result []FileSystemEntry
 
 	for _, entry := range entries {
 		if entry.Info.IsDir() && hasChildren[entry.Path] {
