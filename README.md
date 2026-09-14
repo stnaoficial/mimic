@@ -2,7 +2,7 @@
 
 ## Overview
 
-Mimic interprets files and directories from a source path (`.mimic/templates` directory by default) and generates copies in a target path (the current directory by default).
+Mimic is a template management library that interprets templates from source paths (`.mimic/templates` by default) to target paths (the current directory by default), allowing them to serve as a foundation for new projects.
 
 ## Installation
 
@@ -31,8 +31,8 @@ sudo install mimic /usr/local/bin/mimic
 Basic usage:
 
 ```bash
-$ mimic local                   # Without specifying the source and target path
-$ mimic local -n js-class       # Specifying the template name
+$ mimic local                  # Without specifying the source and target path
+$ mimic local -n js-class      # Specifying the template name
 $ mimic local -s ./.mimic -t . # Specifying the source and target path
 ```
 

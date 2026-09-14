@@ -27,7 +27,7 @@ type Command interface {
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... [COMMAND] [ARG]...\n")
-	fmt.Fprintf(os.Stderr, "Mimic interprets files and directories from a source path (.mimic/templates directory by default) and generates copies in a target path (the current directory by default).\n")
+	fmt.Fprintf(os.Stderr, "Mimic is a template management library that interprets templates from source paths (.mimic/templates by default) to target paths (the current directory by default).\n")
 	fmt.Fprintf(os.Stderr, "\nCommands:\n")
 	fmt.Fprintf(os.Stderr, "  init      %s\n", initCmd.CommandDescription)
 	fmt.Fprintf(os.Stderr, "  local     %s\n", localCmd.CommandDescription)
