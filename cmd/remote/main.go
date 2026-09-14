@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"mimic/cmd"
 	"mimic/internal"
 	"mimic/internal/cli"
 	"mimic/internal/lang"
@@ -153,7 +154,7 @@ func (c *Command) Name() string { return c.name }
 func (c *Command) Parse(args []string) { c.FlagSet.Parse(args) }
 
 func (c *Command) Setup() {
-	var localConfig, err = internal.NewLocalConfig()
+	var localConfig, err = cmd.NewLocalConfig()
 
 	if err != nil {
 		// allow debug
@@ -167,10 +168,10 @@ func (c *Command) Setup() {
 	}
 
 	GithubApiClient = github.NewApiClient(
-		localConfig.GetOrDefault("remote.github.user.username", "stnaoficial"),
-		localConfig.GetOrDefault("remote.github.repository.name", "mimic-template"),
-		localConfig.GetOrDefault("remote.github.repository.branch.name", "main"),
-		localConfig.GetOrDefault("remote.github.user.access-token", ""),
+		localConfig.Get("remote.github.user.username"),
+		localConfig.Get("remote.github.repository.name"),
+		localConfig.Get("remote.github.repository.branch.name"),
+		localConfig.Get("remote.github.user.access-token"),
 	)
 
 	if c.config.NoCache {
@@ -195,12 +196,12 @@ func (c *Command) Run() {
 
 	if len(templateNames) > 0 {
 		for _, templateName := range templateNames {
-			sourcePaths = append(sourcePaths, filepath.Join(internal.DefaultConfigTemplatesDirectoryPath, templateName))
+			sourcePaths = append(sourcePaths, filepath.Join(cmd.DefaultConfigTemplatesDirectoryPath, templateName))
 		}
 	}
 
 	if len(sourcePaths) == 0 {
-		sourcePaths = append(sourcePaths, internal.DefaultConfigTemplatesDirectoryPath)
+		sourcePaths = append(sourcePaths, cmd.DefaultConfigTemplatesDirectoryPath)
 	}
 
 	reader := NewReader(c.config.DebugMode)
@@ -220,7 +221,7 @@ func (c *Command) Run() {
 		os.Exit(0)
 	}
 
-	lastSourcePath := internal.DefaultConfigTemplatesDirectoryPath
+	lastSourcePath := cmd.DefaultConfigTemplatesDirectoryPath
 
 	if value, err := c.config.SourcePath.Last(); err == nil {
 		lastSourcePath = value
@@ -232,12 +233,12 @@ func (c *Command) Run() {
 		GithubApiClient.RepositoryName(),
 	)
 
-	if len(templateNames) == 0 && strings.HasSuffix(lastSourcePath, internal.DefaultConfigTemplatesDirectoryPath) {
+	if len(templateNames) == 0 && strings.HasSuffix(lastSourcePath, cmd.DefaultConfigTemplatesDirectoryPath) {
 		fmt.Printf("No template selected (use --list to list all templates available then -n or --name to select one)\n")
 		cli.Printf(cli.Normal, cli.Yellow, "Considering all templates defined in %s\n", lastSourcePath)
 		cli.Printf(cli.Normal, cli.Yellow, "This action may produce unexpected behavior\n\n")
 
-		fmt.Printf("You can change some settings in %s\n\n", internal.DefaultConfigFilePath)
+		fmt.Printf("You can change some settings in %s\n\n", cmd.DefaultConfigFilePath)
 
 		if !c.config.NoAsk && !cli.Confirm("Do you want to continue [Y/n]? ") {
 			os.Exit(0)

@@ -1,4 +1,4 @@
-package init
+package config
 
 import (
 	"flag"
@@ -12,12 +12,20 @@ import (
 var LocalConfig *cmd.Config
 
 const (
-	CommandDescription = "Initialize an empty .mimic directory in the current path and exit"
+	CommandDescription = "Display the current configuration settings defined in .mimic/config"
 )
 
 const (
 	CommandDebugModeFlagUsage = "Enable debug mode (default false)"
 )
+
+func CommandUsage() {
+	fmt.Fprintf(os.Stderr, "Usage: mimic config [OPTION]...\n")
+	fmt.Fprintf(os.Stderr, "%s\n", CommandDescription)
+	fmt.Fprintf(os.Stderr, "\nOptions:\n")
+	fmt.Fprintf(os.Stderr, "  --debug     	  %s\n", CommandDebugModeFlagUsage)
+	fmt.Fprintln(os.Stderr)
+}
 
 type CommandConfig struct {
 	DebugMode bool
@@ -33,14 +41,6 @@ type Command struct {
 
 func NewCommandConfig() *CommandConfig {
 	return &CommandConfig{}
-}
-
-func CommandUsage() {
-	fmt.Fprintf(os.Stderr, "Usage: mimic init\n")
-	fmt.Fprintf(os.Stderr, "%s\n", CommandDescription)
-	fmt.Fprintf(os.Stderr, "\nOptions:\n")
-	fmt.Fprintf(os.Stderr, "  --debug    %s\n", CommandDebugModeFlagUsage)
-	fmt.Fprintln(os.Stderr)
 }
 
 func NewCommand(name string) *Command {
@@ -62,9 +62,13 @@ func NewCommand(name string) *Command {
 	}
 }
 
-func (c *Command) Name() string { return c.name }
+func (c *Command) Name() string {
+	return c.name
+}
 
-func (c *Command) Parse(args []string) { c.FlagSet.Parse(args) }
+func (c *Command) Parse(args []string) {
+	c.FlagSet.Parse(args)
+}
 
 func (c *Command) Setup() {
 	localConfig, err := cmd.NewLocalConfig()
@@ -74,7 +78,7 @@ func (c *Command) Setup() {
 			cli.Logln(cli.LogSeverityError, err.Error())
 		}
 
-		fmt.Printf("Unable to start operation\n\n")
+		fmt.Printf("Unable to load configuration\n\n")
 
 		os.Exit(1)
 	}
@@ -85,9 +89,5 @@ func (c *Command) Setup() {
 func (c *Command) Validate() {}
 
 func (c *Command) Run() {
-	initializer := NewInitializer(c.config.DebugMode)
-
-	if err := initializer.Init(); err != nil && c.config.DebugMode {
-		cli.Log(cli.LogSeverityError, err.Error())
-	}
+	fmt.Print(string(LocalConfig.Bytes()))
 }

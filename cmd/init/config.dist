@@ -1,9 +1,0 @@
-update.github.user.username: stnaoficial
-update.github.user.access-token:
-update.github.repository.name: mimic
-update.github.repository.branch.name: main
-
-remote.github.user.username: stnaoficial
-remote.github.user.access-token:
-remote.github.repository.name: mimic-template
-remote.github.repository.branch.name: main

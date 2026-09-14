@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"mimic/cmd"
 	"mimic/internal"
 	"mimic/internal/cli"
 	"mimic/internal/lang"
@@ -14,7 +15,7 @@ import (
 	"strings"
 )
 
-var LocalConfig *internal.Config
+var LocalConfig *cmd.Config
 var LocalTemplatesDirectoryPath string
 
 const (
@@ -149,7 +150,7 @@ func (c *Command) Name() string { return c.name }
 func (c *Command) Parse(args []string) { c.FlagSet.Parse(args) }
 
 func (c *Command) Setup() {
-	var localConfig, err = internal.NewLocalConfig()
+	var localConfig, err = cmd.NewLocalConfig()
 
 	if err != nil {
 		// allow debug
@@ -219,7 +220,7 @@ func (c *Command) Run() {
 		cli.Printf(cli.Normal, cli.Yellow, "Considering all templates defined in %s\n", lastSourcePath)
 		cli.Printf(cli.Normal, cli.Yellow, "This action may produce unexpected behavior\n\n")
 
-		fmt.Printf("You can change some settings in %s\n\n", internal.DefaultConfigFilePath)
+		fmt.Printf("You can change some settings in %s\n\n", cmd.DefaultConfigFilePath)
 
 		if !c.config.NoAsk && !cli.Confirm("Do you want to continue [Y/n]? ") {
 			os.Exit(0)

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	configCmd "mimic/cmd/config"
 	initCmd "mimic/cmd/init"
 	localCmd "mimic/cmd/local"
 	remoteCmd "mimic/cmd/remote"
@@ -30,6 +31,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... [COMMAND] [ARG]...\n")
 	fmt.Fprintf(os.Stderr, "Mimic is a template management library that interprets templates from source paths (.mimic/templates by default) to target paths (the current directory by default).\n")
 	fmt.Fprintf(os.Stderr, "\nCommands:\n")
+	fmt.Fprintf(os.Stderr, "  config    %s\n", configCmd.CommandDescription)
 	fmt.Fprintf(os.Stderr, "  init      %s\n", initCmd.CommandDescription)
 	fmt.Fprintf(os.Stderr, "  local     %s\n", localCmd.CommandDescription)
 	fmt.Fprintf(os.Stderr, "  remote    %s\n", remoteCmd.CommandDescription)
@@ -68,6 +70,7 @@ func main() {
 	}
 
 	commands := []Command{
+		configCmd.NewCommand("config"),
 		initCmd.NewCommand("init"),
 		localCmd.NewCommand("local"),
 		remoteCmd.NewCommand("remote"),

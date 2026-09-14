@@ -1,14 +1,10 @@
 package init
 
 import (
-	"embed"
 	"fmt"
 	"mimic/internal/cli"
 	"os"
 )
-
-//go:embed config.dist
-var configDist embed.FS
 
 type initializer struct {
 	debug bool
@@ -39,13 +35,7 @@ func (i *initializer) start() error {
 		return err
 	}
 
-	configContent, err := configDist.ReadFile("config.dist")
-
-	if err != nil {
-		return err
-	}
-
-	if err := os.WriteFile(".mimic/config", configContent, 0644); err != nil {
+	if err := os.WriteFile(".mimic/config", LocalConfig.Bytes(), 0644); err != nil {
 		return err
 	}
 

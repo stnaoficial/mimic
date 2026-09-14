@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"mimic/internal"
+	"mimic/cmd"
 	"mimic/internal/cli"
 	"mimic/tools/github"
 	"os"
@@ -77,7 +77,7 @@ func (c *Command) Parse(args []string) {
 }
 
 func (c *Command) Setup() {
-	localConfig, err := internal.NewLocalConfig()
+	localConfig, err := cmd.NewLocalConfig()
 
 	if err != nil {
 		if c.config.DebugMode {
@@ -90,10 +90,10 @@ func (c *Command) Setup() {
 	}
 
 	GitHubApiClient = github.NewApiClient(
-		localConfig.GetOrDefault("update.github.user.username", "stnaoficial"),
-		localConfig.GetOrDefault("update.github.repository.name", "mimic"),
-		localConfig.GetOrDefault("update.github.repository.branch.name", "main"),
-		localConfig.GetOrDefault("update.github.user.access-token", ""),
+		localConfig.Get("update.github.user.username"),
+		localConfig.Get("update.github.repository.name"),
+		localConfig.Get("update.github.repository.branch.name"),
+		localConfig.Get("update.github.user.access-token"),
 	)
 }
 
