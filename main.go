@@ -7,6 +7,7 @@ import (
 	initCmd "mimic/cmd/init"
 	localCmd "mimic/cmd/local"
 	remoteCmd "mimic/cmd/remote"
+	updateCmd "mimic/cmd/update"
 	"os"
 )
 
@@ -32,6 +33,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "  init      %s\n", initCmd.CommandDescription)
 	fmt.Fprintf(os.Stderr, "  local     %s\n", localCmd.CommandDescription)
 	fmt.Fprintf(os.Stderr, "  remote    %s\n", remoteCmd.CommandDescription)
+	fmt.Fprintf(os.Stderr, "  update    %s\n", updateCmd.CommandDescription)
 	fmt.Fprintf(os.Stderr, "\nOptions:\n")
 	fmt.Fprintf(os.Stderr, "  -h, --help    %s\n", helpFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --version     %s\n", printVersionFlagUsage)
@@ -69,6 +71,7 @@ func main() {
 		initCmd.NewCommand("init"),
 		localCmd.NewCommand("local"),
 		remoteCmd.NewCommand("remote"),
+		updateCmd.NewCommand("update"),
 	}
 
 	for _, command := range commands {

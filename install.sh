@@ -16,7 +16,7 @@ case "$OS" in
 		PLATFORM="darwin"
 		;;
 	*)
-		echo "Unsupported operating system"
+		printf 'Unsupported operating system\n\n'
 		exit 1
 		;;
 esac
@@ -29,12 +29,16 @@ case "$ARCH" in
 		ARCHITECTURE="arm64"
 		;;
 	*)
-		echo "Unsupported architecture"
+		printf 'Unsupported architecture\n\n'
 		exit 1
 		;;
 esac
 
-VERSION="$(curl -fsSL "https://api.github.com/repos/$REPOSITORY/releases/latest" | grep '"tag_name"' | cut -d '"' -f 4)"
+if [ -n "$1" ]; then
+    VERSION="$1"
+else
+    VERSION="$(curl -fsSL "https://api.github.com/repos/$REPOSITORY/releases/latest" | grep '"tag_name"' | cut -d '"' -f 4)"
+fi
 
 ARCHIVE="mimic-$PLATFORM-$ARCHITECTURE.tar.gz"
 URL="https://github.com/$REPOSITORY/releases/download/$VERSION/$ARCHIVE"
@@ -48,4 +52,4 @@ tar -xzf "$TEMP_DIR/$ARCHIVE" -C "$TEMP_DIR"
 
 sudo install "$TEMP_DIR/$PLATFORM-$ARCHITECTURE/mimic" "$INSTALL_DIR/mimic"
 
-echo "Mimic $VERSION installed successfully"
+printf 'Mimic version %s installed successfully\n\n' "$VERSION"

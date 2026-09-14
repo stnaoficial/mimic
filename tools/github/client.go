@@ -89,7 +89,7 @@ type ApiResponse struct {
 
 type ApiClient struct {
 	PublicUrl url.URL
-	RawUrl    url.URL
+	RawApiUrl url.URL
 	ApiUrl    url.URL
 
 	tempStorage *temp.Storage
@@ -104,9 +104,9 @@ type ApiClient struct {
 
 func NewApiClient(username string, repositoryName string, branchName string, accessToken string) *ApiClient {
 	return &ApiClient{
-		PublicUrl: url.URL{Scheme: "https", Host: "github.com", Path: path.Join(username, repositoryName)},
-		RawUrl:    url.URL{Scheme: "https", Host: "raw.githubusercontent.com", Path: path.Join(username, repositoryName)},
-		ApiUrl:    url.URL{Scheme: "https", Host: "api.github.com", Path: path.Join("repos", username, repositoryName)},
+		PublicUrl: *PublicUrl.JoinPath(username, repositoryName),
+		RawApiUrl: *RawApiUrl.JoinPath(username, repositoryName),
+		ApiUrl:    *ApiUrl.JoinPath("repos", username, repositoryName),
 
 		tempStorage: temp.NewStorage("github"),
 
@@ -133,6 +133,10 @@ func (g *ApiClient) RepositoryName() string {
 
 func (g *ApiClient) ParsePublicEntryUrl(path string) *url.URL {
 	return g.PublicUrl.JoinPath("tree", g.branchName, path)
+}
+
+func (g *ApiClient) ParseRawApiEntryUrl(path string) *url.URL {
+	return g.RawApiUrl.JoinPath(g.branchName, path)
 }
 
 func (g *ApiClient) ParseRemoteEntry(entry ApiTreeEntry) *RemoteEntry {
@@ -337,8 +341,8 @@ func (g *ApiClient) FetchApiBlob(sha string) (*ApiBlobEntry, error) {
 	return g.parseBlobResponse(bytes.NewReader(body))
 }
 
-func (g *ApiClient) FetchApiRawContent(path string) ([]byte, error) {
-	url := g.RawUrl.JoinPath(g.branchName, path)
+func (g *ApiClient) FetchRawApiContent(path string) ([]byte, error) {
+	url := g.RawApiUrl.JoinPath(g.branchName, path)
 
 	tempKey := temp.NewKey(url.String(), time.Minute)
 
