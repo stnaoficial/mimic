@@ -27,7 +27,7 @@ func (g *Generator) defineGlobalVars() {
 	// TODO
 }
 
-func (g *Generator) defineLocalVars(pathName string, entry Entry) {
+func (g *Generator) defineLocalVars(pathName string, _ FileSystemEntry) {
 	dirName := filepath.Dir(pathName)
 
 	count := 0
@@ -53,54 +53,56 @@ func (g *Generator) defineLocalVars(pathName string, entry Entry) {
 	g.comp.Env.Vars["__BASENAME__"] = filepath.Base(pathName)
 }
 
-func (g *Generator) Generate(targetPaths []string, inputEntryMap EntryMap) EntryMap {
-	outputEntryMap := make(EntryMap)
+func (g *Generator) Generate(targetPaths []string, entries FileSystemMap) (FileSystemMap, error) {
+	generatedEntries := make(FileSystemMap)
 
 	g.defineGlobalVars()
 
 	for _, targetPath := range targetPaths {
+		// allow debug
 		if g.debug {
 			cli.Logf(cli.LogSeverityWarn, "Generating files for directory %s ...\n", targetPath)
 		}
 
-		for pathName, entry := range inputEntryMap {
+		for pathName, entry := range entries {
 			g.defineLocalVars(pathName, entry)
 
 			result, err := g.comp.Compile(lang.NewBuffer("<pathname>", pathName))
 
 			if err != nil {
-				cli.Logln(cli.LogSeverityError, err.Error())
-				os.Exit(0)
+				return nil, err
 			}
 
 			pathName = filepath.Join(targetPath, result)
 
 			if entry.IsDir() {
-				g.generateDirectory(outputEntryMap, pathName, entry)
+				g.generateDirectory(generatedEntries, pathName, entry)
 			} else {
-				g.generateFile(outputEntryMap, pathName, entry)
+				g.generateFile(generatedEntries, pathName, entry)
 			}
 		}
 	}
 
-	return outputEntryMap
+	return generatedEntries, nil
 }
 
-func (g *Generator) generateDirectory(outputEntryMap EntryMap, dirName string, entry Entry) {
+func (g *Generator) generateDirectory(generatedEntries FileSystemMap, dirName string, entry FileSystemEntry) {
+	// allow debug
 	if g.debug {
 		cli.Logf(cli.LogSeverityWarn, "Generating directory %s ...\n", dirName)
 	}
 
-	outputEntryMap[dirName] = entry
+	generatedEntries[dirName] = entry
 }
 
-func (g *Generator) generateFile(outputEntryMap EntryMap, fileName string, entry Entry) {
+func (g *Generator) generateFile(generatedEntries FileSystemMap, fileName string, entry FileSystemEntry) error {
 	before, isCompilable := strings.CutSuffix(fileName, ".mimic")
 
 	if isCompilable {
 		fileName = before
 	}
 
+	// allow debug
 	if g.debug {
 		cli.Logf(cli.LogSeverityWarn, "Generating file %s ...\n", fileName)
 	}
@@ -109,12 +111,13 @@ func (g *Generator) generateFile(outputEntryMap EntryMap, fileName string, entry
 		result, err := g.comp.Compile(lang.NewBuffer(fileName, string(entry.Data)))
 
 		if err != nil {
-			cli.Logln(cli.LogSeverityError, err.Error())
-			os.Exit(0)
+			return err
 		}
 
 		entry.Data = []byte(result)
 	}
 
-	outputEntryMap[fileName] = entry
+	generatedEntries[fileName] = entry
+
+	return nil
 }

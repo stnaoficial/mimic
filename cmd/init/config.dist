@@ -1,0 +1,4 @@
+remote.github.user.username: stnaoficial
+remote.github.user.access-token:
+remote.github.repository.name: mimic-template
+remote.github.repository.branch.name: main

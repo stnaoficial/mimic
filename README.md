@@ -2,15 +2,38 @@
 
 ## Overview
 
-Mimic interprets files and directories from a source path (`.mimic` directory by default) and generates copies in a target path (the current directory by default).
+Mimic interprets files and directories from a source path (`.mimic/templates` directory by default) and generates copies in a target path (the current directory by default).
+
+## Installation
+
+Mimic supports Unix-like systems, including Linux and MacOS.
+
+Install the latest version with:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/stnaoficial/mimic/main/install.sh | sh
+```
+
+Verify the installation:
+
+```bash
+mimic --version
+```
+
+Alternatively, download the appropriate archive from the [latest GitHub release](https://github.com/stnaoficial/mimic/releases/latest) and install the binary manually:
+
+```bash
+sudo install mimic /usr/local/bin/mimic
+```
 
 ## Usage
 
 Basic usage:
 
 ```bash
-$ mimic copy            # Without specifing the source and target path
-$ mimic copy ./.mimic . # Specifing the source and target path
+$ mimic local                   # Without specifying the source and target path
+$ mimic local -n js-class       # Specifying the template name
+$ mimic local -s ./.mimic -t . # Specifying the source and target path
 ```
 
 ## How It Works
@@ -47,13 +70,13 @@ MyVariableName
 Provide variables directly:
 
 ```bash
-mimic copy -v name0=value -v "name1=value" -v name2="value" ...
+mimic local -v name0=value -v "name1=value" -v name2="value" ...
 ```
 
 Customize prompt messages:
 
 ```bash
-mimic copy -p name0="My custom prompt message: " ...
+mimic local -p name0="My custom prompt message: " ...
 ```
 
 ## Behavior Details

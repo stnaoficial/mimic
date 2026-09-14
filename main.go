@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"mimic/internal/cmd"
+	initCmd "mimic/cmd/init"
+	localCmd "mimic/cmd/local"
+	remoteCmd "mimic/cmd/remote"
 	"os"
 )
 
@@ -15,14 +17,21 @@ const (
 	printVersionFlagUsage = "Print version information and exit"
 )
 
+type Command interface {
+	Name() string
+	Parse(args []string)
+	Setup()
+	Validate()
+	Run()
+}
+
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: mimic [OPTION]... [COMMAND] [ARG]...\n")
-	fmt.Fprintf(os.Stderr, "Mimic interprets files and directories from a source path (.mimic directory by default) and generates copies in a target path (the current directory by default).\n")
+	fmt.Fprintf(os.Stderr, "Mimic interprets files and directories from a source path (.mimic/templates directory by default) and generates copies in a target path (the current directory by default).\n")
 	fmt.Fprintf(os.Stderr, "\nCommands:\n")
-	fmt.Fprintf(os.Stderr, "  init        %s\n", cmd.InitCommandDescription)
-	fmt.Fprintf(os.Stderr, "  dump        %s\n", cmd.DumpCommandDescription)
-	fmt.Fprintf(os.Stderr, "  copy        %s\n", cmd.CopyCommandDescription)
-	fmt.Fprintf(os.Stderr, "  template    %s\n", cmd.TemplateCommandDescription)
+	fmt.Fprintf(os.Stderr, "  init      %s\n", initCmd.CommandDescription)
+	fmt.Fprintf(os.Stderr, "  local     %s\n", localCmd.CommandDescription)
+	fmt.Fprintf(os.Stderr, "  remote    %s\n", remoteCmd.CommandDescription)
 	fmt.Fprintf(os.Stderr, "\nOptions:\n")
 	fmt.Fprintf(os.Stderr, "  -h, --help    %s\n", helpFlagUsage)
 	fmt.Fprintf(os.Stderr, "  --version     %s\n", printVersionFlagUsage)
@@ -41,7 +50,7 @@ func run(args []string) {
 	flagSet.Parse(args)
 
 	if printVersion {
-		fmt.Printf("Mimic version %s\n", Version)
+		fmt.Printf("Mimic version %s\n\n", Version)
 		os.Exit(0)
 	}
 
@@ -56,18 +65,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	switch os.Args[1] {
-	case "init":
-		cmd.NewInitCommand().Run(os.Args[2:])
-	case "dump":
-		cmd.NewDumpCommand().Run(os.Args[2:])
-	case "copy":
-		cmd.NewCopyCommand().Run(os.Args[2:])
-	case "template":
-		cmd.NewTemplateCommand().Run(os.Args[2:])
-	default:
-		run(os.Args[1:])
+	commands := []Command{
+		initCmd.NewCommand("init"),
+		localCmd.NewCommand("local"),
+		remoteCmd.NewCommand("remote"),
 	}
 
+	for _, command := range commands {
+		if command.Name() == os.Args[1] {
+			command.Parse(os.Args[2:])
+			command.Setup()
+			command.Validate()
+			command.Run()
+			os.Exit(0)
+		}
+	}
+
+	run(os.Args[1:])
 	os.Exit(0)
 }

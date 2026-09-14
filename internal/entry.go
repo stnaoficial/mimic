@@ -2,17 +2,17 @@ package internal
 
 import "os"
 
-type Entry struct {
+type FileSystemEntry struct {
 	Name string
 	Info os.FileInfo
 	Size int
 	Data []byte
 }
 
-type EntryMap = map[string]Entry
+type FileSystemMap = map[string]FileSystemEntry
 
-func NewFileEntry(name string, info os.FileInfo, data []byte) Entry {
-	return Entry{
+func NewFileEntry(name string, info os.FileInfo, data []byte) FileSystemEntry {
+	return FileSystemEntry{
 		Name: name,
 		Info: info,
 		Size: len(data),
@@ -20,8 +20,8 @@ func NewFileEntry(name string, info os.FileInfo, data []byte) Entry {
 	}
 }
 
-func NewDirectoryEntry(name string, info os.FileInfo) Entry {
-	return Entry{
+func NewDirectoryEntry(name string, info os.FileInfo) FileSystemEntry {
+	return FileSystemEntry{
 		Name: name,
 		Info: info,
 		Size: 0,
@@ -29,10 +29,10 @@ func NewDirectoryEntry(name string, info os.FileInfo) Entry {
 	}
 }
 
-func (e *Entry) IsDir() bool {
+func (e *FileSystemEntry) IsDir() bool {
 	return e.Info.IsDir()
 }
 
-func (e *Entry) IsFile() bool {
+func (e *FileSystemEntry) IsFile() bool {
 	return !e.Info.IsDir()
 }

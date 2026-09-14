@@ -16,7 +16,7 @@ const (
 )
 
 type Writer struct {
-	entryMap EntryMap
+	writtenEntries FileSystemMap
 
 	debug bool
 	mode  WriteMode
@@ -24,23 +24,28 @@ type Writer struct {
 
 func NewWriter(debug bool, mode WriteMode) *Writer {
 	return &Writer{
-		entryMap: make(EntryMap),
+		writtenEntries: make(FileSystemMap),
 
 		debug: debug,
 		mode:  mode,
 	}
 }
 
-func (w *Writer) Write(entryMap EntryMap) EntryMap {
-	for pathName, entry := range entryMap {
+func (w *Writer) Write(entries FileSystemMap) (FileSystemMap, error) {
+	w.writtenEntries = make(FileSystemMap)
+
+	for pathName, entry := range entries {
 		if entry.IsDir() {
-			w.writeDirectory(pathName, entry)
-		} else {
-			w.writeFile(pathName, entry)
+			if err := w.writeDirectory(pathName, entry); err != nil {
+				return nil, err
+			}
+		} else if err := w.writeFile(pathName, entry); err != nil {
+			return nil, err
 		}
 	}
 
-	for pathName, entry := range w.entryMap {
+	for pathName, entry := range w.writtenEntries {
+		// allow debug
 		if w.debug {
 			cli.Logf(cli.LogSeveritySuccess, "Wrote about %d bytes at %s\n", entry.Size, pathName)
 		}
@@ -54,23 +59,26 @@ func (w *Writer) Write(entryMap EntryMap) EntryMap {
 		fmt.Println()
 	}
 
-	return w.entryMap
+	return w.writtenEntries, nil
 }
 
-func (w *Writer) writeDirectory(dirName string, entry Entry) {
+func (w *Writer) writeDirectory(dirName string, entry FileSystemEntry) error {
+	// allow debug
 	if w.debug {
 		cli.Logf(cli.LogSeverityWarn, "Writing directory %s ...\n", dirName)
 	}
 
 	if err := os.MkdirAll(dirName, 0755); err != nil {
-		cli.Logf(cli.LogSeverityError, "Unable to create directory %s\n", dirName)
-		os.Exit(1)
+		return err
 	}
 
-	w.entryMap[dirName] = entry
+	w.writtenEntries[dirName] = entry
+
+	return nil
 }
 
-func (w *Writer) writeFile(fileName string, entry Entry) {
+func (w *Writer) writeFile(fileName string, entry FileSystemEntry) error {
+	// allow debug
 	if w.debug {
 		cli.Logf(cli.LogSeverityWarn, "Writing file %s ...\n", fileName)
 	}
@@ -78,8 +86,7 @@ func (w *Writer) writeFile(fileName string, entry Entry) {
 	dirName := filepath.Dir(fileName)
 
 	if err := os.MkdirAll(dirName, 0755); err != nil {
-		cli.Logf(cli.LogSeverityError, "Unable to create directory %s\n", dirName)
-		os.Exit(1)
+		return err
 	}
 
 	var data []byte
@@ -96,9 +103,10 @@ func (w *Writer) writeFile(fileName string, entry Entry) {
 	}
 
 	if err := os.WriteFile(fileName, data, 0644); err != nil {
-		cli.Logf(cli.LogSeverityError, "Unable to write file %s\n", fileName)
-		os.Exit(1)
+		return err
 	}
 
-	w.entryMap[fileName] = entry
+	w.writtenEntries[fileName] = entry
+
+	return nil
 }

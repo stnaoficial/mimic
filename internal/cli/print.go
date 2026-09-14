@@ -6,8 +6,9 @@ type Color string
 type Weight string
 
 const (
-	Normal Weight = "0"
-	Bold   Weight = "1"
+	Normal    Weight = "0"
+	Bold      Weight = "1"
+	Underline Weight = "4"
 )
 
 const (
@@ -44,4 +45,8 @@ func Printf(weight Weight, color Color, text string, args ...any) {
 
 func Println(weight Weight, color Color, text string) {
 	fmt.Print(Sprintln(weight, color, text))
+}
+
+func PrintEmptyln() {
+	fmt.Println()
 }

@@ -52,3 +52,11 @@ func (s *FlagSlice) Set(value string) error {
 
 	return nil
 }
+
+func (s *FlagSlice) Last() (string, error) {
+	if len(s.Values) == 0 {
+		return "", fmt.Errorf("No value available")
+	}
+
+	return s.Values[len(s.Values)-1], nil
+}
