@@ -2,8 +2,11 @@
 
 ## Sumary
 
-- [Variables](#variables)
+- [How It Works](#how-it-works)
   - [Variable Syntax](#variable-syntax)
+  - [Interactive Mode](#interactive-mode)
+  - [Non-Interactive Mode](#non-interactive-mode)
+  - [Custom Prompts](#custom-prompts)
 
 - [Constants](#constants)
   - [`__COUNT__`](#__count__)
@@ -18,19 +21,73 @@
   - [Case separators](#case-separators)
   - [Miscellaneous](#miscellaneous)
 
-## Variables
+## How It Works
+
+1. The library scans template files and directories.
+2. It detects expressions such as `{{ name }}`, `{{ lower(name) }}`, and `{{ pascal(name) }}` throughout the template structure.
+3. It evaluates the expressions and generates the resulting files and directories in a target directory.
 
 ### Variable Syntax
 
-```plaintext
+```text
 {{ var }}
 ```
 
 Variables can be used in:
 
-* Directory names
-* File names
-* File contents
+- Directory names
+- File names
+- File contents
+
+For example:
+
+```text
+{{ pascal(name) }}
+```
+
+### Interactive Mode
+
+When a variable is not provided through the CLI, the library prompts for its value:
+
+```text
+{{ pascal(name) }}
+```
+
+```bash
+$ Enter a value for "name": My variable name
+```
+
+The value is then evaluated wherever the variable is used. In this example:
+
+```text
+{{ pascal(name) }}
+```
+
+becomes:
+
+```text
+MyVariableName
+```
+
+### Non-Interactive Mode
+
+Variables can be provided directly through the CLI using the `-v` or `--var` flags:
+
+```bash
+mimic local|remote -v name0=value -v "name1=value" -v name2="value" ...
+```
+
+This allows the library to run without prompting for variable values.
+
+### Custom Prompts
+
+Prompt messages can be customized using the `-p` or `--prompt` flags:
+
+```bash
+mimic local|remote -p name0="My custom prompt message: " ...
+```
+
+The custom prompt is used when the library needs to ask for the corresponding variable interactively.
 
 ## Constants
 

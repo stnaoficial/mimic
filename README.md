@@ -2,7 +2,11 @@
 
 ## Overview
 
-Mimic is a template management library that interprets templates from source paths (`.mimic/templates` by default) to target paths (the current directory by default), allowing them to serve as a foundation for new projects.
+The library is a template management and interpretation library that also includes a compiler for processing `.mimic` files and directory structures.
+
+Templates can be made available through the `.mimic/templates` directory, and they can come from either the local filesystem or a remote repository. The remote repository and other settings can be configured through the `.mimic/config` file.
+
+For more control, templates can also be used directly by specifying their source and/or target paths.
 
 ## Installation
 
@@ -31,57 +35,37 @@ sudo install mimic /usr/local/bin/mimic
 Basic usage:
 
 ```bash
-$ mimic local                  # Without specifying the source and target path
-$ mimic local -n js-class      # Specifying the template name
-$ mimic local -s ./.mimic -t . # Specifying the source and target path
+# Without specifying which template to use
+mimic local|remote
+
+# Specifying the template name
+mimic local|remote -n js-class
+
+# Specifying the source and target path
+mimic local|remote -s ./.mimic/templates/js-class -t .
 ```
 
-## How It Works
+## Example
 
-1. Mimic scans the source directory for `.mimic` files
-2. It detects variables like `{{ name }}`, `{{ lower(name) }}`, etc.
-3. Expressions are evaluated:
-
-   * From `--var` flags if provided
-   * Otherwise via interactive prompts
-4. Values are modified (optional)
-5. Files are generated in the target directory with variables evaluated
-
-## Interactive Mode
-
-If a variable is not provided via CLI, Mimic will prompt:
-
-```txt
-{{ pascal(name) }}
-```
+The html-5 template defines a basic HTML project structure:
 
 ```bash
-$ Please enter a value for "name": My variable name
+.mimic/templates/html-5/
+└── {{name}}
+    ├── assets
+    ├── index.html.mimic
+    ├── script.js
+    └── style.css
 ```
 
-This will be evaluated as:
-
-```txt
-MyVariableName
-```
-
-## Non-Interactive Mode
-
-Provide variables directly:
+When this template is used, Mimic interprets the directory structure and creates a new project from it. The `{{name}}` directory contains a template variable, so its name is resolved when the template is compiled. For example, using html-5 with `-v name=my-site` would produce:
 
 ```bash
-mimic local -v name0=value -v "name1=value" -v name2="value" ...
+my-site
+├── assets
+├── index.html.mimic
+├── script.js
+└── style.css
 ```
 
-Customize prompt messages:
-
-```bash
-mimic local -p name0="My custom prompt message: " ...
-```
-
-## Behavior Details
-
-* Only files ending with `.mimic` are processed
-* The `.mimic` suffix is removed in generated files
-* Directory structure is preserved, as are non-mimic files
-* Missing directories are created automatically
+Files ending in `.mimic` are interpreted by the compiler and generated as regular files, while other files are copied as they are. This allows a template to combine static files and dynamically generated files in the same directory.

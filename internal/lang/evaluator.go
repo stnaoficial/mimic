@@ -24,7 +24,7 @@ func (e *Evaluator) prompt(name string) string {
 	prompt, ok := e.env.Prompts[name]
 
 	if !ok {
-		prompt = fmt.Sprintf("Please enter a value for \"%s\": ", name)
+		prompt = fmt.Sprintf("Enter a value for \"%s\": ", name)
 	}
 
 	return cli.MustPrompt(prompt)

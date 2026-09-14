@@ -19,13 +19,13 @@ var LocalConfig *cmd.Config
 var LocalTemplatesDirectoryPath string
 
 const (
-	CommandDescription = "Start generating templates from local repositories"
+	CommandDescription = "Start using templates available on the local filesystem"
 )
 
 const (
-	CommandTemplateNameFlagUsage = "Set the template name to copy"
+	CommandTemplateNameFlagUsage = "Set the template name to use"
 
-	CommandSourceFlagUsage = "Set the source path for templates to copy (default .mimic/templates)"
+	CommandSourceFlagUsage = "Set the source path for templates to use (default .mimic/templates)"
 	CommandTargetFlagUsage = "Set the target path for generated templates (default .)"
 
 	CommandVarValueFlagUsage  = "Set a variable value by passing a key=value pair"

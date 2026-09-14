@@ -13,7 +13,7 @@ import (
 var GitHubApiClient *github.ApiClient
 
 const (
-	CommandDescription = "Updates the library to a specific version (the latest version by default)"
+	CommandDescription = "Update the library to a specific version (the latest version by default)"
 )
 
 const (
