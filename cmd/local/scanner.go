@@ -41,10 +41,8 @@ func (s *Scanner) Scan(sourcePaths []string) (internal.FileSystemMap, error) {
 			if err := s.scanSourceDirectory(sourcePath, sourcePath); err != nil {
 				return nil, err
 			}
-		} else {
-			if err := s.scanSourceFile(filepath.Dir(sourcePath), sourcePath, sourceInfo); err != nil {
-				return nil, err
-			}
+		} else if err := s.scanSourceFile(filepath.Dir(sourcePath), sourcePath, sourceInfo); err != nil {
+			return nil, err
 		}
 	}
 

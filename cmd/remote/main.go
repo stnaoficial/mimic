@@ -296,7 +296,7 @@ func (c *Command) Run() {
 			cli.Logln(cli.LogSeverityError, err.Error())
 		}
 
-		fmt.Printf("Unable to start compiling\n\n")
+		fmt.Printf("Unable to compile\n\n")
 
 		os.Exit(1)
 	}

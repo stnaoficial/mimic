@@ -12,12 +12,16 @@ import (
 type Generator struct {
 	comp *lang.Compiler
 
+	generatedEntries FileSystemMap
+
 	debug bool
 }
 
 func NewGenerator(comp *lang.Compiler, debug bool) *Generator {
 	return &Generator{
 		comp: comp,
+
+		generatedEntries: make(FileSystemMap),
 
 		debug: debug,
 	}
@@ -54,7 +58,7 @@ func (g *Generator) defineLocalVars(pathName string, _ FileSystemEntry) {
 }
 
 func (g *Generator) Generate(targetPaths []string, entries FileSystemMap) (FileSystemMap, error) {
-	generatedEntries := make(FileSystemMap)
+	g.generatedEntries = make(FileSystemMap)
 
 	g.defineGlobalVars()
 
@@ -76,26 +80,26 @@ func (g *Generator) Generate(targetPaths []string, entries FileSystemMap) (FileS
 			pathName = filepath.Join(targetPath, result)
 
 			if entry.IsDir() {
-				g.generateDirectory(generatedEntries, pathName, entry)
-			} else {
-				g.generateFile(generatedEntries, pathName, entry)
+				g.generateDirectory(pathName, entry)
+			} else if err := g.generateFile(pathName, entry); err != nil {
+				return nil, err
 			}
 		}
 	}
 
-	return generatedEntries, nil
+	return g.generatedEntries, nil
 }
 
-func (g *Generator) generateDirectory(generatedEntries FileSystemMap, dirName string, entry FileSystemEntry) {
+func (g *Generator) generateDirectory(dirName string, entry FileSystemEntry) {
 	// allow debug
 	if g.debug {
 		cli.Logf(cli.LogSeverityWarn, "Generating directory %s ...\n", dirName)
 	}
 
-	generatedEntries[dirName] = entry
+	g.generatedEntries[dirName] = entry
 }
 
-func (g *Generator) generateFile(generatedEntries FileSystemMap, fileName string, entry FileSystemEntry) error {
+func (g *Generator) generateFile(fileName string, entry FileSystemEntry) error {
 	before, isCompilable := strings.CutSuffix(fileName, ".mimic")
 
 	if isCompilable {
@@ -117,7 +121,7 @@ func (g *Generator) generateFile(generatedEntries FileSystemMap, fileName string
 		entry.Data = []byte(result)
 	}
 
-	generatedEntries[fileName] = entry
+	g.generatedEntries[fileName] = entry
 
 	return nil
 }
