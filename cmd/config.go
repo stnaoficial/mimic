@@ -32,7 +32,7 @@ type Config struct {
 	fileName string
 	dirName  string
 
-	Settings map[string]string
+	settings map[string]string
 }
 
 func NewConfig(dirName string) *Config {
@@ -68,19 +68,11 @@ func NewConfig(dirName string) *Config {
 		settings[key] = value
 	}
 
-	config := &Config{
+	return &Config{
 		fileName: fileName,
 		dirName:  dirName,
-		Settings: settings,
+		settings: settings,
 	}
-
-	for key, value := range DefaultConfigSettings {
-		if _, ok := config.Settings[key]; !ok {
-			config.Settings[key] = value
-		}
-	}
-
-	return config
 }
 
 func NewLocalConfig() (*Config, error) {
@@ -106,10 +98,18 @@ func NewLocalConfig() (*Config, error) {
 	return NewConfig(globalConfigPath), nil
 }
 
-func (c *Config) Bytes() []byte {
-	keys := make([]string, 0, len(c.Settings))
+func (c *Config) RegisterDefaultSettings() {
+	for key, value := range DefaultConfigSettings {
+		if _, ok := c.settings[key]; !ok {
+			c.settings[key] = value
+		}
+	}
+}
 
-	for key := range c.Settings {
+func (c *Config) Bytes() []byte {
+	keys := make([]string, 0, len(c.settings))
+
+	for key := range c.settings {
 		keys = append(keys, key)
 	}
 
@@ -126,7 +126,7 @@ func (c *Config) Bytes() []byte {
 			buffer.WriteRune('\n')
 		}
 
-		buffer.WriteString(fmt.Sprintf("%s: %s\n", key, c.Settings[key]))
+		buffer.WriteString(fmt.Sprintf("%s: %s\n", key, c.settings[key]))
 
 		previousPrefix = prefix
 	}
@@ -136,8 +136,33 @@ func (c *Config) Bytes() []byte {
 	return buffer.Bytes()
 }
 
-func (c *Config) Get(key string) string {
-	return c.Settings[key]
+func (c *Config) Require(key string) string {
+	return c.settings[key]
+}
+
+func (c *Config) Get(key string) (string, bool) {
+	value, ok := c.settings[key]
+	return value, ok
+}
+
+func (c *Config) GetOrDefault(key string, defaultValue string) string {
+	if value, ok := c.Get(key); !ok {
+		return defaultValue
+	} else {
+		return value
+	}
+}
+
+func (c *Config) GetAll(prefix string) map[string]string {
+	settings := make(map[string]string)
+
+	for key, value := range c.settings {
+		if strings.HasPrefix(key, prefix) {
+			settings[key] = value
+		}
+	}
+
+	return settings
 }
 
 func (c *Config) FileName() string {

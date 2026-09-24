@@ -67,7 +67,9 @@ func (c *Command) Name() string { return c.name }
 func (c *Command) Parse(args []string) { c.FlagSet.Parse(args) }
 
 func (c *Command) Setup() {
-	localConfig, err := cmd.NewLocalConfig()
+	var err error
+
+	LocalConfig, err = cmd.NewLocalConfig()
 
 	if err != nil {
 		if c.config.DebugMode {
@@ -79,7 +81,7 @@ func (c *Command) Setup() {
 		os.Exit(1)
 	}
 
-	LocalConfig = localConfig
+	LocalConfig.RegisterDefaultSettings()
 }
 
 func (c *Command) Validate() {}

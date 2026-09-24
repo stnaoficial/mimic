@@ -242,7 +242,7 @@ func (g *ApiClient) FetchApiTree() (*ApiTreeResponse, error) {
 
 	url.RawQuery = query.Encode()
 
-	tempKey := temp.NewKey(url.String(), time.Minute)
+	tempKey := temp.NewKey(url.String())
 
 	if value, err := g.tempStorage.Restore(tempKey); err == nil && g.Cache {
 		return g.parseTreeResponse(bytes.NewReader(value))
@@ -266,7 +266,7 @@ func (g *ApiClient) FetchApiTree() (*ApiTreeResponse, error) {
 		return nil, err
 	}
 
-	if err := g.tempStorage.Backup(tempKey, body); err != nil {
+	if err := g.tempStorage.Backup(tempKey, body, time.Minute); err != nil {
 		return nil, err
 	}
 
@@ -276,7 +276,7 @@ func (g *ApiClient) FetchApiTree() (*ApiTreeResponse, error) {
 func (g *ApiClient) FetchApiContent(path string) ([]ApiEntry, error) {
 	url := g.ApiUrl.JoinPath("contents", path)
 
-	tempKey := temp.NewKey(url.String(), time.Minute)
+	tempKey := temp.NewKey(url.String())
 
 	if value, err := g.tempStorage.Restore(tempKey); err == nil && g.Cache {
 		return g.parseContentResponse(bytes.NewReader(value))
@@ -300,7 +300,7 @@ func (g *ApiClient) FetchApiContent(path string) ([]ApiEntry, error) {
 		return nil, err
 	}
 
-	if err := g.tempStorage.Backup(tempKey, body); err != nil {
+	if err := g.tempStorage.Backup(tempKey, body, time.Minute); err != nil {
 		return nil, err
 	}
 
@@ -310,7 +310,7 @@ func (g *ApiClient) FetchApiContent(path string) ([]ApiEntry, error) {
 func (g *ApiClient) FetchApiBlob(sha string) (*ApiBlobEntry, error) {
 	url := g.ApiUrl.JoinPath("git", "blobs", sha)
 
-	tempKey := temp.NewKey(url.String(), time.Minute)
+	tempKey := temp.NewKey(url.String())
 
 	if value, err := g.tempStorage.Restore(tempKey); err == nil && g.Cache {
 		return g.parseBlobResponse(bytes.NewReader(value))
@@ -334,7 +334,7 @@ func (g *ApiClient) FetchApiBlob(sha string) (*ApiBlobEntry, error) {
 		return nil, err
 	}
 
-	if err := g.tempStorage.Backup(tempKey, body); err != nil {
+	if err := g.tempStorage.Backup(tempKey, body, time.Minute); err != nil {
 		return nil, err
 	}
 
@@ -344,7 +344,7 @@ func (g *ApiClient) FetchApiBlob(sha string) (*ApiBlobEntry, error) {
 func (g *ApiClient) FetchRawApiContent(path string) ([]byte, error) {
 	url := g.RawApiUrl.JoinPath(g.branchName, path)
 
-	tempKey := temp.NewKey(url.String(), time.Minute)
+	tempKey := temp.NewKey(url.String())
 
 	if value, err := g.tempStorage.Restore(tempKey); err == nil && g.Cache {
 		return value, nil
@@ -368,7 +368,7 @@ func (g *ApiClient) FetchRawApiContent(path string) ([]byte, error) {
 		return nil, err
 	}
 
-	if err := g.tempStorage.Backup(tempKey, body); err != nil {
+	if err := g.tempStorage.Backup(tempKey, body, time.Minute); err != nil {
 		return nil, err
 	}
 

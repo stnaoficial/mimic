@@ -154,7 +154,7 @@ func (c *Command) Name() string { return c.name }
 func (c *Command) Parse(args []string) { c.FlagSet.Parse(args) }
 
 func (c *Command) Setup() {
-	var localConfig, err = cmd.NewLocalConfig()
+	localConfig, err := cmd.NewLocalConfig()
 
 	if err != nil {
 		// allow debug
@@ -167,11 +167,13 @@ func (c *Command) Setup() {
 		os.Exit(1)
 	}
 
+	localConfig.RegisterDefaultSettings()
+
 	GithubApiClient = github.NewApiClient(
-		localConfig.Get("remote.github.user.username"),
-		localConfig.Get("remote.github.repository.name"),
-		localConfig.Get("remote.github.repository.branch.name"),
-		localConfig.Get("remote.github.user.access-token"),
+		localConfig.Require("remote.github.user.username"),
+		localConfig.Require("remote.github.repository.name"),
+		localConfig.Require("remote.github.repository.branch.name"),
+		localConfig.Require("remote.github.user.access-token"),
 	)
 
 	if c.config.NoCache {

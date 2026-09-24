@@ -15,7 +15,6 @@ import (
 	"strings"
 )
 
-var LocalConfig *cmd.Config
 var LocalTemplatesDirectoryPath string
 
 const (
@@ -150,7 +149,7 @@ func (c *Command) Name() string { return c.name }
 func (c *Command) Parse(args []string) { c.FlagSet.Parse(args) }
 
 func (c *Command) Setup() {
-	var localConfig, err = cmd.NewLocalConfig()
+	localConfig, err := cmd.NewLocalConfig()
 
 	if err != nil {
 		// allow debug
@@ -163,8 +162,9 @@ func (c *Command) Setup() {
 		os.Exit(1)
 	}
 
-	LocalConfig = localConfig
-	LocalTemplatesDirectoryPath = LocalConfig.TemplatesDirectoryPath()
+	localConfig.RegisterDefaultSettings()
+
+	LocalTemplatesDirectoryPath = localConfig.TemplatesDirectoryPath()
 }
 
 func (c *Command) Validate() {

@@ -89,11 +89,13 @@ func (c *Command) Setup() {
 		os.Exit(1)
 	}
 
+	localConfig.RegisterDefaultSettings()
+
 	GitHubApiClient = github.NewApiClient(
-		localConfig.Get("update.github.user.username"),
-		localConfig.Get("update.github.repository.name"),
-		localConfig.Get("update.github.repository.branch.name"),
-		localConfig.Get("update.github.user.access-token"),
+		localConfig.Require("update.github.user.username"),
+		localConfig.Require("update.github.repository.name"),
+		localConfig.Require("update.github.repository.branch.name"),
+		localConfig.Require("update.github.user.access-token"),
 	)
 }
 

@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-var LocalConfig *cmd.Config
+var localConfig *cmd.Config
 
 const (
 	CommandDescription = "Display the current configuration settings defined in .mimic/config"
@@ -71,7 +71,9 @@ func (c *Command) Parse(args []string) {
 }
 
 func (c *Command) Setup() {
-	localConfig, err := cmd.NewLocalConfig()
+	var err error
+
+	localConfig, err = cmd.NewLocalConfig()
 
 	if err != nil {
 		if c.config.DebugMode {
@@ -83,11 +85,11 @@ func (c *Command) Setup() {
 		os.Exit(1)
 	}
 
-	LocalConfig = localConfig
+	localConfig.RegisterDefaultSettings()
 }
 
 func (c *Command) Validate() {}
 
 func (c *Command) Run() {
-	fmt.Print(string(LocalConfig.Bytes()))
+	fmt.Print(string(localConfig.Bytes()))
 }
