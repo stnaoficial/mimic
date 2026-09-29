@@ -27,7 +27,7 @@ func (r *Reader) List(sourcePaths []string) error {
 			cli.Logf(cli.LogSeverityWarn, "Listing source path %s ...\n", sourcePath)
 		}
 
-		entriesFound, err := GithubApiClient.FetchApiContent(sourcePath)
+		entriesFound, err := GithubApiClient.FetchApiContents(sourcePath)
 
 		if err != nil {
 			return err

@@ -227,7 +227,7 @@ func (c *Command) Run() {
 		}
 	}
 
-	scanner := NewScanner(c.config.DebugMode)
+	scanner := internal.NewScanner(c.config.DebugMode)
 
 	scannedEntries, err := scanner.Scan(sourcePaths)
 

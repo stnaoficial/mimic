@@ -1,40 +1,45 @@
-package temp
+package cache
 
 import (
 	"bytes"
 	"encoding/gob"
 	"errors"
 	"fmt"
+	"mimic/internal/util"
 	"os"
 	"path/filepath"
 	"time"
 )
 
 type Storage struct {
-	name string
+	Name string
+	Path string
 }
 
-type StoragePayload struct {
+type Payload struct {
 	Value   []byte
 	Expires time.Time
 }
 
 func NewStorage(name string) *Storage {
-	return &Storage{name}
+	return &Storage{
+		Name: name,
+		Path: filepath.Join(util.DefaultTempDir(), name),
+	}
 }
 
-func (s *Storage) buildFileName(key *Key) string {
-	return filepath.Join(os.TempDir(), "mimic", s.name, fmt.Sprintf("%x", key.Hash))
+func (c *Storage) buildFileName(key *Key) string {
+	return filepath.Join(c.Path, fmt.Sprintf("%x", key.Hash))
 }
 
-func (s *Storage) Backup(key *Key, value []byte, duration time.Duration) error {
-	fileName := s.buildFileName(key)
+func (c *Storage) Backup(key *Key, value []byte, duration time.Duration) error {
+	fileName := c.buildFileName(key)
 
 	if err := os.MkdirAll(filepath.Dir(fileName), 0700); err != nil {
 		return err
 	}
 
-	payload := StoragePayload{
+	payload := Payload{
 		Value:   value,
 		Expires: time.Now().Add(duration),
 	}
@@ -48,21 +53,21 @@ func (s *Storage) Backup(key *Key, value []byte, duration time.Duration) error {
 	return os.WriteFile(fileName, buf.Bytes(), 0600)
 }
 
-func (s *Storage) Restore(key *Key) ([]byte, error) {
-	value, err := os.ReadFile(s.buildFileName(key))
+func (c *Storage) Restore(key *Key) ([]byte, error) {
+	value, err := os.ReadFile(c.buildFileName(key))
 
 	if err != nil {
 		return nil, err
 	}
 
-	var payload StoragePayload
+	var payload Payload
 
 	if err := gob.NewDecoder(bytes.NewReader(value)).Decode(&payload); err != nil {
 		return nil, err
 	}
 
 	if time.Now().After(payload.Expires) {
-		return nil, errors.New("temporary storage payload has expired")
+		return nil, errors.New("temporary Cache payload has expired")
 	}
 
 	return payload.Value, nil

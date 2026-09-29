@@ -13,15 +13,9 @@ func NewUpdateManager() *UpdateManager {
 }
 
 func (um *UpdateManager) Update(version string) error {
-	command := exec.Command(
-		"sh",
-		"-c",
-		fmt.Sprintf(
-			"curl -fsSL %s | sh -s %s",
-			GitHubApiClient.ParseRawApiEntryUrl("install.sh"),
-			version,
-		),
-	)
+	installFileUrl := GitHubApiClient.ParseRawApiEntryUrl("install.sh")
+
+	command := exec.Command("sh", "-c", fmt.Sprintf("curl -fsSL %s | sh -s %s", installFileUrl, version))
 
 	command.Stdin = os.Stdin
 	command.Stdout = os.Stdout

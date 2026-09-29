@@ -63,3 +63,7 @@ func FileSystemWalk(root string) ([]FileSystemEntry, error) {
 
 	return result, nil
 }
+
+func DefaultTempDir() string {
+	return filepath.Join(os.TempDir(), "mimic")
+}

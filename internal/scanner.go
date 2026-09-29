@@ -1,7 +1,6 @@
-package local
+package internal
 
 import (
-	"mimic/internal"
 	"mimic/internal/cli"
 	"mimic/internal/util"
 	"os"
@@ -9,21 +8,21 @@ import (
 )
 
 type Scanner struct {
-	scannedEntries internal.FileSystemMap
+	scannedEntries FileSystemMap
 
 	debug bool
 }
 
 func NewScanner(debug bool) *Scanner {
 	return &Scanner{
-		scannedEntries: make(internal.FileSystemMap),
+		scannedEntries: make(FileSystemMap),
 
 		debug: debug,
 	}
 }
 
-func (s *Scanner) Scan(sourcePaths []string) (internal.FileSystemMap, error) {
-	s.scannedEntries = make(internal.FileSystemMap)
+func (s *Scanner) Scan(sourcePaths []string) (FileSystemMap, error) {
+	s.scannedEntries = make(FileSystemMap)
 
 	for _, sourcePath := range sourcePaths {
 		// allow debug
@@ -100,7 +99,7 @@ func (s *Scanner) scanDirectoryEntry(relPath string, entry util.FileSystemEntry)
 		cli.Logf(cli.LogSeverityWarn, "Scanning directory %s ...\n", relPath)
 	}
 
-	s.scannedEntries[relPath] = internal.NewDirectoryEntry(relPath, entry.Info)
+	s.scannedEntries[relPath] = NewDirectoryEntry(relPath, entry.Info)
 }
 
 func (s *Scanner) scanFileEntry(relPath string, entry util.FileSystemEntry) error {
@@ -117,7 +116,7 @@ func (s *Scanner) scanFileEntry(relPath string, entry util.FileSystemEntry) erro
 		return err
 	}
 
-	s.scannedEntries[relPath] = internal.NewFileEntry(relPath, entry.Info, fileData)
+	s.scannedEntries[relPath] = NewFileEntry(relPath, entry.Info, fileData)
 
 	return nil
 }

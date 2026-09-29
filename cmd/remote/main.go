@@ -17,6 +17,7 @@ import (
 )
 
 var GithubApiClient *github.ApiClient
+var GithubMirror *github.Mirror
 
 const (
 	CommandDescription = "Start using templates available in a remote repository"
@@ -169,16 +170,18 @@ func (c *Command) Setup() {
 
 	localConfig.RegisterDefaultSettings()
 
-	GithubApiClient = github.NewApiClient(
-		localConfig.Require("remote.github.user.username"),
-		localConfig.Require("remote.github.repository.name"),
-		localConfig.Require("remote.github.repository.branch.name"),
-		localConfig.Require("remote.github.user.access-token"),
-	)
+	githubUsername := localConfig.Require("remote.github.user.username")
+	githubRepositoryName := localConfig.Require("remote.github.repository.name")
+	githubBranchName := localConfig.Require("remote.github.repository.branch.name")
+	githubAccessToken := localConfig.Require("remote.github.user.access-token")
+
+	GithubApiClient = github.NewApiClient(githubUsername, githubRepositoryName, githubBranchName, githubAccessToken)
 
 	if c.config.NoCache {
 		GithubApiClient.Cache = false
 	}
+
+	GithubMirror = github.NewMirror(githubUsername, githubRepositoryName, githubBranchName)
 }
 
 func (c *Command) Validate() {
@@ -247,9 +250,22 @@ func (c *Command) Run() {
 		}
 	}
 
-	scanner := NewScanner(c.config.DebugMode)
+	scanner := internal.NewScanner(c.config.DebugMode)
 
-	scannedEntries, err := scanner.Scan(sourcePaths)
+	mirroredSourcePaths, err := GithubMirror.Mirror(sourcePaths...)
+
+	if err != nil {
+		// allow debug
+		if c.config.DebugMode {
+			cli.Logln(cli.LogSeverityError, err.Error())
+		}
+
+		fmt.Printf("Unable to mirror\n\n")
+
+		os.Exit(1)
+	}
+
+	scannedEntries, err := scanner.Scan(mirroredSourcePaths)
 
 	if err != nil {
 		// allow debug
