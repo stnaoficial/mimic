@@ -2,6 +2,8 @@
 
 ## Sumary
 
+- [Project Structure](#project-structure)
+
 - [How It Works](#how-it-works)
   - [Variable Syntax](#variable-syntax)
   - [Interactive Mode](#interactive-mode)
@@ -21,11 +23,41 @@
   - [Case separators](#case-separators)
   - [Miscellaneous](#miscellaneous)
 
+## Project Structure
+
+Mimic automatically searches for an available configuration before starting execution.
+
+You can define your configuration in the home folder or within your project as follows:
+
+```
+.mimic/
+└── templates
+    └── <template>
+    config
+```
+
+- The `templates` directory stores all templates available via `mimic local --list` (run `mimic local --help` to see more).
+- The `config` file allows you to define your preference settings (run `mimic config --help` to see more).
+
+> You can make its template internal directory tree match the destination paths from the CWD in order to avoid defining the target path.
+>
+> Example:
+> 
+> ```text
+> .mimic/templates/page/src/pages/{{pascal(name)}}/...
+> ```
+
 ## How It Works
 
-1. The library scans template files and directories.
+1. The library scans template files and directories (in the `.mimic/templates` directory by default).
 2. It detects expressions such as `{{ name }}`, `{{ lower(name) }}`, and `{{ pascal(name) }}` throughout the template structure.
 3. It evaluates the expressions and generates the resulting files and directories in a target directory.
+
+> Only files with the `.mimic` extension are compiled by the library; therefore, you need to include this extension along with others so that they are processed as expected. For example:
+> 
+> ```text
+> .mimic/templates/pages/{{pascal(name)}}/page.tsx.mimic
+> ```
 
 ### Variable Syntax
 
